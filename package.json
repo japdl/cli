@@ -1,0 +1,40 @@
+{
+  "name": "japdl",
+  "version": "1.0.0",
+  "description": "",
+  "main": "js/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node .",
+    "compile": "pkg . --out-path ./build",
+    "tsc": "tsc -w",
+    "lint": "npx eslint .",
+    "lintfix": "npx eslint . --fix"
+  },
+  "pkg": {
+    "targets": [
+      "node14-win-x64"
+    ],
+    "outputPath": "dist",
+    "assets": "node_modules/puppeteer-extra-plugin-stealth/**/*.*"
+  },
+  "bin": "js/index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "archiver": "^5.3.0",
+    "puppeteer-core": "^8.0.0",
+    "puppeteer-extra": "^3.1.18",
+    "puppeteer-extra-plugin-adblocker": "^2.11.11",
+    "puppeteer-extra-plugin-stealth": "^2.7.6"
+  },
+  "devDependencies": {
+    "typescript": "^4.2.4",
+    "eslint": "^7.24.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@types/archiver": "^5.1.0",
+    "@types/puppeteer": "^5.4.3"
+  }
+}
