@@ -6,6 +6,8 @@ function getDownloaderFromFlags(){
         if(arg.startsWith('-')){
             if(arg === '-h'){
                 return new Downloader(false);
+            } else {
+                throw "Le flag n'a pas pu être identifié, " + arg + " est invalide";
             }
         }
     }
