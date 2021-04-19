@@ -17,12 +17,21 @@ class Downloader {
     outputDirectory!: string;
     onready: Promise<undefined>;
     chromePath!: string;
+    verbose: boolean;
 
     /**
      * Instantiates a browser and reads config file to get output directory
      * and chrome path
      */
-    constructor(headless = true) {
+    constructor(flags?: Record<string, boolean>) {
+        let headless: boolean;
+        if(flags !== undefined){
+            this.verbose = flags.v;
+            headless = !flags.h;
+        } else {
+            this.verbose = false;
+            headless = true;
+        }
         const variables = utils.path.getConfigVariables();
         this.chromePath = utils.path.getChromePath(variables.chromePath);
         this.outputDirectory = variables.outputDirectory;
@@ -34,9 +43,6 @@ class Downloader {
                 })
                 .then((browser) => {
                     this.browser = browser;
-                    this.browser.on('disconnected', () => {
-                        throw "Le navigateur a été fermé";
-                    })
                     resolve(undefined);
                 })
                 .catch((error) => {
@@ -56,6 +62,7 @@ class Downloader {
         if (await this.isJapscan404(page)) {
             throw "La page " + link + " n'existe pas (404)";
         }
+        this.verbosePrint("Création de la page " + link);
         return page;
     }
 
@@ -65,16 +72,7 @@ class Downloader {
      */
     async isJapscan404(page: Page): Promise<boolean> {
         try {
-            if (
-                (await page.$eval(
-                    "div.container:nth-child(2) > h1:nth-child(1)",
-                    (element: Element) => element.innerHTML
-                )) === "Oops!"
-            ) {
-                return true;
-            } else {
-                return false;
-            }
+            return await page.$eval("div.container:nth-child(2) > h1:nth-child(1)", (element: Element) => element.innerHTML) === "Oops!";
         } catch (e) {
             return false;
         }
@@ -140,6 +138,7 @@ class Downloader {
      * @returns download location
      */
     async downloadChapter(mangaName: string, chapter: number): Promise<string> {
+        this.verbosePrint("Téléchargement du chapitre " + chapter +  " de " + mangaName);
         const mangaNameStats = (await this.fetchStats(mangaName)).name;
         if (mangaName !== mangaNameStats) {
             console.log("Le manga " + mangaName + " est appelé " + mangaNameStats + " sur japscan. japdl va le télécharger avec le nom " + mangaNameStats);
@@ -157,8 +156,9 @@ class Downloader {
      * @returns download locations as an array
      */
     async downloadChapters(mangaName: string, start: number, end: number): Promise<string[]> {
+        this.verbosePrint("Téléchargement des chapitres de " + mangaName + " de " + start + " à " + end);
         if (start > end) {
-            throw "Start cannot be after end";
+            throw "Le début ne peut pas être plus grand que la fin";
         }
         const waiters: Promise<string>[] = [];
         const chapterDownloadLocations: Array<string> = [];
@@ -179,6 +179,7 @@ class Downloader {
      * @returns 
      */
     async downloadChapterFromLink(link: string, compression = false): Promise<string> {
+        this.verbosePrint("Téléchargement du chapitre depuis le lien " + link);
         const startAttributes = this.getAttributesFromLink(link);
         let attributes;
         do {
@@ -199,6 +200,7 @@ class Downloader {
      * @returns next page link
      */
     async downloadImageFromLink(link: string): Promise<string> {
+        this.verbosePrint("Téléchargement de l'image depuis le lien " + link);
         function createPath(_path: string) {
             const split = _path.split("/");
             let path = "";
@@ -216,7 +218,9 @@ class Downloader {
 
         const popupCanvasSelector = "body > canvas";
         try {
+            this.verbosePrint("Attente du script de page...");
             await page.waitForSelector(popupCanvasSelector, { timeout: 20000 });
+            this.verbosePrint("Attente terminée");
         } catch (e) {
             console.log(
                 "Une erreur s'est produite pour la page " +
@@ -227,6 +231,7 @@ class Downloader {
             return await this.downloadImageFromLink(link);
         }
         // get next link
+        this.verbosePrint("Récupération du lien de la page suivante");
         const element = await page.$("#image");
         const nextLink = await element?.evaluate((e) =>
             e.getAttribute("data-next-link")
@@ -267,6 +272,7 @@ class Downloader {
         await page.evaluate(() => {
             document.querySelectorAll('div').forEach((el) => el.remove());
         });
+        this.verbosePrint("Téléchargement de l'image...");
         await canvasElement?.screenshot({
             omitBackground: true,
             path: path,
@@ -287,6 +293,7 @@ class Downloader {
      * @returns array of array of paths, where the volumes were downloaded
      */
     async downloadVolumes(mangaName: string, start: number, end: number): Promise<string[][]> {
+        this.verbosePrint("Téléchargement des volumes " + mangaName + " de " + start + " à " + end);
         if (start > end) {
             throw "Le début ne peut pas être plus grand que la fin";
         }
@@ -311,19 +318,19 @@ class Downloader {
             console.log("Le manga " + mangaName + " est appelé " + stats.name + " sur japscan. japdl va le télécharger avec le nom " + stats.name);
             mangaName = stats.name;
         }
-        console.log("Récupération des informations sur le volume...");
+        this.verbosePrint("Récupération des informations sur le volume...");
 
         const toDownloadFrom = await this.fetchVolumeChapters(
             volumeNumber,
             mangaName
         );
 
-        console.log("Récupéré");
+        this.verbosePrint("Récupéré");
 
         const waiters = [];
         const downloadLocations: Array<string> = [];
         for (const link of toDownloadFrom) {
-            console.log("Téléchargement de " + link);
+            this.verbosePrint("Téléchargement de " + link);
             // should return path of download
             waiters.push(this.downloadChapterFromLink(link));
         }
@@ -331,12 +338,13 @@ class Downloader {
         for (const waiter of waiters) {
             downloadLocations.push(await waiter);
         }
+        const cbrName = this.getCbrFrom(mangaName, volumeNumber, "volume");
         console.log("En train de faire le cbr " + mangaName + " volume " + volumeNumber + "...");
         await utils.zipper.zipDirectories(
             downloadLocations,
-            this.getCbrFrom(mangaName, volumeNumber, "volume")
+            cbrName
         ).catch((e) => console.log("Erreur pendant la création du cbr:", e));
-        console.log("cbr terminé!");
+        console.log("Cbr terminé! Il est enregistré à l'endroit " + cbrName);
         return downloadLocations;
     }
     /**
@@ -346,6 +354,7 @@ class Downloader {
      * @returns manga stats
      */
     async fetchStats(mangaName: string, _page?: Page): Promise<MangaStats> {
+        this.verbosePrint("Récupération des infos du manga " + mangaName);
         const link = this.WEBSITE + "/manga/" + mangaName + "/";
 
         const page = _page || (await this.goToExistingPage(link));
@@ -379,6 +388,7 @@ class Downloader {
         volumeNumber: number,
         mangaName: string
     ): Promise<Array<string>> {
+        this.verbosePrint("Récupération des chapitres du volume" + volumeNumber + " du manga " + mangaName);
         const link = this.WEBSITE + "/manga/" + mangaName + "/";
 
         const page = await this.goToExistingPage(link);
@@ -416,11 +426,17 @@ class Downloader {
         }
     }
 
+    verbosePrint(msg: string): void {
+        if (this.verbose) console.log(msg);
+    }
+
     /**
      * destroy browser, do not use downloader after this operation (will crash)
      */
     async destroy(): Promise<void> {
-        await this.browser.close();
+        this.verbosePrint("Destruction du downloader");
+        if(this.browser)
+            await this.browser.close();
     }
 }
 
