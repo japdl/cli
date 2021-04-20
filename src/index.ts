@@ -1,7 +1,6 @@
-import Downloader from "./downloader";
 import Interface from "./interface";
 
-function getDownloaderWithFlags() {
+function getFlags() {
     const flagStrings: string[] = ['h', 'v'];
     const regex = new RegExp(`-${flagStrings.join('*')}*[^${flagStrings.join('')}]`, 'g');
     const flags: Record<string, boolean> = {};
@@ -23,11 +22,11 @@ function getDownloaderWithFlags() {
             })
         }
     });
-    return new Downloader(flags);
+    return flags;
 }
-const downloader = getDownloaderWithFlags();
-downloader.onready.then(() => {
-    const inter = new Interface(downloader);
+const flags = getFlags();
+const inter = new Interface(flags);
+inter.onready.then(() => {
     inter.start();
 }).catch((error) => {
     console.log(error);

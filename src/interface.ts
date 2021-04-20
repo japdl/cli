@@ -4,21 +4,18 @@ import utils from "./utils";
 /**
  * Interface implementation for downloader
  */
-class Interface {
+class Interface extends Downloader {
     rl: readline.Interface;
     downloader!: Downloader;
     commands: Record<string, (args: string[]) => Promise<void>>;
-    /**
-     * Instantiate the command line interface
-     * @param downloader downloader to use
-     */
-    constructor(downloader: Downloader) {
+
+    constructor(flags: Record<string, boolean>) {
+        super(flags);
         this.rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
             terminal: false,
         });
-        this.downloader = downloader;
 
         this.commands = {
             help: async (): Promise<void> => {
@@ -55,27 +52,27 @@ class Interface {
                 switch (type) {
                     case "volume": {
                         if (range) {
-                            const downloadLocationsArray = await this.downloader.downloadVolumes(mangaName, range.start, range.end);
+                            const downloadLocationsArray = await this.downloadVolumes(mangaName, range.start, range.end);
                             downloadLocationsArray.forEach((downloadLocations) => {
                                 utils.path.rmIfSFlag(args, downloadLocations);
                             });
                         } else {
-                            const downloadLocations = await this.downloader.downloadVolume(mangaName, number);
+                            const downloadLocations = await this.downloadVolume(mangaName, number);
                             utils.path.rmIfSFlag(args, downloadLocations);
                         }
                         break;
                     }
                     case "chapitre":
                         if (range) {
-                            const downloadLocations = await downloader.downloadChapters(mangaName, range.start, range.end);
+                            const downloadLocations = await this.downloadChapters(mangaName, range.start, range.end);
                             utils.path.rmIfSFlag(args, downloadLocations);
                         } else {
-                            if (args[3].toLowerCase().indexOf('f') === -1 && utils.path.alreadyDownloaded(this.downloader.outputDirectory + "/" + mangaName + "/" + number)) {
+                            if (args[3].toLowerCase().indexOf('f') === -1 && utils.path.alreadyDownloaded(this.outputDirectory + "/" + mangaName + "/" + number)) {
                                 console.log("Le chapitre est déjà téléchargé, si vous voulez quand même le re-télécharger,");
                                 console.log("Il faut spécifier l'argument 'f' après le numéro de chapitre.");
                                 return;
                             }
-                            const downloadLocation = await downloader.downloadChapter(mangaName, number);
+                            const downloadLocation = await this.downloadChapter(mangaName, number);
                             utils.path.rmIfSFlag(args, [downloadLocation]);
                         }
                         break;
@@ -98,19 +95,19 @@ class Interface {
                 const number = parseInt(args[2]);
                 let toZip: string[] = [];
                 if (type === 'chapitre') {
-                    const path = downloader.getPathFrom({ chapter: number.toString(), manga: mangaName, page: "" + 1 });
+                    const path = this.getPathFrom({ chapter: number.toString(), manga: mangaName, page: "" + 1 });
                     console.log(path);
                     toZip = [path];
                 }
                 if (type === 'volume') {
-                    const chapters: string[] = await downloader.fetchVolumeChapters(number, mangaName);
-                    chapters.forEach(function (chapter) {
-                        toZip.push(downloader.getPathFrom(chapter));
+                    const chapters: string[] = await this.fetchVolumeChapters(number, mangaName);
+                    chapters.forEach((chapter) => {
+                        toZip.push(this.getPathFrom(chapter));
                     });
                 }
                 const isWorthZipping = utils.path.tellIfDoesntExist(toZip);
                 if (isWorthZipping) {
-                    utils.zipper.zipDirectories(toZip, downloader.getCbrFrom(mangaName, number, type));
+                    utils.zipper.zipDirectories(toZip, this.getCbrFrom(mangaName, number, type));
                 }
             },
             info: async (args: string[]): Promise<void> => {
@@ -118,7 +115,7 @@ class Interface {
                     console.log(`${mangaName} possède ${value} ${type}${(value > 1) ? "s" : ""}`);
                 }
                 const mangaName = args[0];
-                const mangaStats: MangaStats = await downloader.fetchStats(mangaName);
+                const mangaStats: MangaStats = await this.fetchStats(mangaName);
                 if (!isNaN(mangaStats.volumes)) {
                     prettyPrint(mangaStats.volumes, "volume");
                 }
@@ -142,7 +139,7 @@ class Interface {
      */
     async quit(): Promise<void> {
         console.log("Merci d'avoir utilisé japdl!");
-        await this.downloader.destroy();
+        await this.destroy();
         process.exit(0);
     }
     /**
