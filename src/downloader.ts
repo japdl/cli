@@ -35,7 +35,7 @@ class Downloader {
         const variables = utils.path.getConfigVariables();
         this.chromePath = utils.path.getChromePath(variables.chromePath);
         this.outputDirectory = variables.outputDirectory;
-        this.onready = new Promise((resolve) => {
+        this.onready = new Promise((resolve, reject) => {
             puppeteer
                 .launch({
                     headless: headless,
@@ -45,8 +45,8 @@ class Downloader {
                     this.browser = browser;
                     resolve(undefined);
                 })
-                .catch((error) => {
-                    throw "Une erreur s'est produite lors de l'initialisation:" + error;
+                .catch(() => {
+                    reject(`Le chemin (${this.chromePath}) spécifié n'est pas correct`);
                 });
         });
     }
