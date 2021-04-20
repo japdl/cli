@@ -12,9 +12,6 @@
     "lintfix": "npx eslint . --fix"
   },
   "pkg": {
-    "targets": [
-      "node14-win-x64"
-    ],
     "outputPath": "dist",
     "assets": "node_modules/puppeteer-extra-plugin-stealth/**/*.*"
   },
