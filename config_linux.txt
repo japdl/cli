@@ -1,0 +1,4 @@
+# Le chemin vers l'executable chrome utilisé par le programme (obligatoire)
+chrome_path=/usr/bin/google-chrome-stable
+# Le chemin vers l'endroit où seront téléchargés les mangas et les cbr
+output_dir=manga

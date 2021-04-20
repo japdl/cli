@@ -45,15 +45,20 @@ class Downloader {
                     this.browser = browser;
                     resolve(undefined);
                 })
-                .catch(() => {
-                    reject(`Le chemin (${this.chromePath}) spécifié n'est pas correct`);
+                .catch((e) => {
+                    if(e.toString().includes("FetchError")){
+                        reject("Une erreur s'est produite, vérifiez que vous avez bien une connexion internet");
+                    } else if(e.toString().includes("Failed to launch the browser process!")){
+                        reject("Le chemin de chrome donné (" + this.chromePath +") n'est pas correct");
+                    }
+                    reject("Une erreur s'est produite lors de l'initialisation: " + e);
                 });
         });
     }
     // helpers
 
-    /** if page is 
-     * @param link link to go to 
+    /** if page exists, go to it, else throw error
+     * @param link link to go to
      * @returns a valid japscan page
      */
     async goToExistingPage(link: string): Promise<Page> {

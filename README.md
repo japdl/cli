@@ -31,6 +31,7 @@ npm install
 tsc
 ```
 ### Puis le lancer
+Attention, une version de node 14 est nécessaire.
 ```
 node .
 ```
