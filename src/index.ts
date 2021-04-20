@@ -25,9 +25,11 @@ function getDownloaderWithFlags() {
     });
     return new Downloader(flags);
 }
-
 const downloader = getDownloaderWithFlags();
 downloader.onready.then(() => {
     const inter = new Interface(downloader);
     inter.start();
+}).catch((error) => {
+    console.log(error);
+    process.exit(1);
 });
