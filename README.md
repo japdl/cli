@@ -2,7 +2,7 @@
 Japdl est un programme pour télécharger les mangas de japscan. Pour l'instant, il n'est pas possible de télécharger les webtoons.
 
 ## Téléchargement
-[Par ici pour la version 1.0](https://github.com/Seysa/japdl/releases/tag/v1.0 "v1.0")
+[Par ici pour la dernière version](https://github.com/Seysa/japdl/releases "Dernière version")
 
 ## Installation
 Dézipper l'archive `japdl.zip` téléchargée. Vous trouverez à l'intérieur `japdl.exe` qui est l'essentiel du programme.
