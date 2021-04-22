@@ -18,15 +18,20 @@ Le programme peut se lancer avec des options, permettant d'activer des options s
 1. `-h | --headless` : Permet de voir le navigateur télécharger en direct sur japscan. Par défaut, le navigateur est caché.
 2. `-v | --verbose` : Permet d'avoir plus de messages dans la console pour mieux comprendre le fonctionnement.
 3. `-f | --fast` : Permet de télécharger simultanément tous les chapitres d'un volume. Cette option est déconseillée, car des images peuvent être sautées si l'image prend plus de 60 secondes à charger. Pour l'utiliser correctement, il est nécessaire d'avoir une bonne connexion et un ordinateur très rapide.
+4. `-t | --timeout`: Permet de changer le temps (en secondes) que met le programme à décider qu'il n'y a pas d'image sur une page. Si votre connexion est très lente, les 60 secondes de base peuvent ne pas être suffisantes. Ce flag permet de changer la durée.
 
 Il est possible de cumuler plusieurs flags sur le même tiret. L'ordre des flags n'a alors pas d'importance.
 
-Exemples:
-- `japdl.exe -h`
-- `japdl.exe -vhf`
-- `japdl.exe --verbose --headless`
+Exemples (dans un terminal):
+- `japdl -h`
+- `japdl -vhf`
+- `japdl --verbose --headless`
+- `japdl -t=120`
+- `japdl --timeout 150`
 
-Sur windows, il est possible de spécifier ces flags dans les propriétés d'un raccourci vers l'executable de japdl. Il suffit de placer après le chemin dans "Cible" les flags.
+Sur Windows, il est possible de spécifier ces flags dans les propriétés d'un raccourci vers l'executable de japdl. Il suffit de placer après le chemin dans "Cible" les flags.
+
+Sur Linux et Mac, il suffit d'écrire ces flags après le nom du programme dans le terminal pendant le lancement.
 
 ## Pour les developpeurs
 ### Compiler le programme depuis les sources

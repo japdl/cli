@@ -19,6 +19,7 @@ class Downloader {
     chromePath!: string;
     verbose: boolean;
     fast: boolean;
+    timeout: number;
 
     /**
      * Instantiates a browser and reads config file to get output directory
@@ -29,12 +30,14 @@ class Downloader {
         v: boolean;
         h: boolean;
         f: boolean;
+        t: number;
         _: (string | number)[];
         $0: string;
     }) {
         this.verbose = flags.v;
         const headless = !flags.h;
         this.fast = flags.f;
+        this.timeout = flags.t;
         const variables = utils.path.getConfigVariables();
         this.chromePath = utils.path.getChromePath(variables.chromePath);
         this.outputDirectory = variables.outputDirectory;
@@ -243,7 +246,7 @@ class Downloader {
         const popupCanvasSelector = "body > canvas";
         try {
             this.verbosePrint("Attente du script de page...");
-            await page.waitForSelector(popupCanvasSelector, { timeout: 60000 });
+            await page.waitForSelector(popupCanvasSelector, { timeout: this.timeout });
             this.verbosePrint("Attente terminée");
         } catch (e) {
             console.log("Cette page n'a pas l'air d'avoir d'images");

@@ -19,6 +19,7 @@ class Interface extends Downloader {
         v: boolean;
         h: boolean;
         f: boolean;
+        t: number;
         _: (string | number)[];
         $0: string;
     }) {
