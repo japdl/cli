@@ -294,6 +294,7 @@ class Downloader {
             quality: 100,
         }).catch((e) => console.log("Erreur dans la capture de l'image", e));
         console.log(attributes.manga + " " + attributes.chapter + " page " + attributes.page + " a été téléchargé à l'endroit: " + path);
+        page.close();
         return true;
     }
 
