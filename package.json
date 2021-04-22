@@ -12,7 +12,11 @@
     "lintfix": "npx eslint . --fix"
   },
   "pkg": {
-    "targets": ["node14-linux-x64", "node14-macos-x64", "node14-win-x64"],
+    "targets": [
+      "node14-linux-x64",
+      "node14-macos-x64",
+      "node14-win-x64"
+    ],
     "outputPath": "dist",
     "assets": "node_modules/puppeteer-extra-plugin-stealth/**/*.*"
   },
@@ -21,11 +25,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/yargs": "^16.0.1",
     "archiver": "^5.3.0",
     "puppeteer-core": "^8.0.0",
     "puppeteer-extra": "^3.1.18",
     "puppeteer-extra-plugin-adblocker": "^2.11.11",
-    "puppeteer-extra-plugin-stealth": "^2.7.6"
+    "puppeteer-extra-plugin-stealth": "^2.7.6",
+    "yargs": "^16.2.0"
   },
   "devDependencies": {
     "typescript": "^4.2.4",

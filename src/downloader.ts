@@ -18,20 +18,23 @@ class Downloader {
     onready: Promise<undefined>;
     chromePath!: string;
     verbose: boolean;
+    fast: boolean;
 
     /**
      * Instantiates a browser and reads config file to get output directory
      * and chrome path
      */
-    constructor(flags?: Record<string, boolean>) {
-        let headless: boolean;
-        if(flags !== undefined){
-            this.verbose = flags.v;
-            headless = !flags.h;
-        } else {
-            this.verbose = false;
-            headless = true;
-        }
+    constructor(flags: {
+        [x: string]: unknown;
+        v: boolean;
+        h: boolean;
+        f: boolean;
+        _: (string | number)[];
+        $0: string;
+    }) {
+        this.verbose = flags.v;
+        const headless = !flags.h;
+        this.fast = flags.f;
         const variables = utils.path.getConfigVariables();
         this.chromePath = utils.path.getChromePath(variables.chromePath);
         this.outputDirectory = variables.outputDirectory;
@@ -46,10 +49,10 @@ class Downloader {
                     resolve(undefined);
                 })
                 .catch((e) => {
-                    if(e.toString().includes("FetchError")){
+                    if (e.toString().includes("FetchError")) {
                         reject("Une erreur s'est produite, vérifiez que vous avez bien une connexion internet");
-                    } else if(e.toString().includes("Failed to launch the browser process!")){
-                        reject("Le chemin de chrome donné (" + this.chromePath +") n'est pas correct");
+                    } else if (e.toString().includes("Failed to launch the browser process!")) {
+                        reject("Le chemin de chrome donné (" + this.chromePath + ") n'est pas correct");
                     }
                     reject("Une erreur s'est produite lors de l'initialisation: " + e);
                 });
@@ -143,7 +146,7 @@ class Downloader {
      * @returns download location
      */
     async downloadChapter(mangaName: string, chapter: number): Promise<string> {
-        this.verbosePrint("Téléchargement du chapitre " + chapter +  " de " + mangaName);
+        this.verbosePrint("Téléchargement du chapitre " + chapter + " de " + mangaName);
         const mangaNameStats = (await this.fetchStats(mangaName)).name;
         if (mangaName !== mangaNameStats) {
             console.log("Le manga " + mangaName + " est appelé " + mangaNameStats + " sur japscan. japdl va le télécharger avec le nom " + mangaNameStats);
@@ -165,15 +168,10 @@ class Downloader {
         if (start > end) {
             throw "Le début ne peut pas être plus grand que la fin";
         }
-        const waiters: Promise<string>[] = [];
         const chapterDownloadLocations: Array<string> = [];
         for (let i = start; i <= end; i++) {
             // Should return array of path it downloaded it in
-            waiters.push(this.downloadChapter(mangaName, i));
-        }
-        for (const waiter of waiters) {
-            const downloadLocation = await waiter;
-            chapterDownloadLocations.push(downloadLocation);
+            chapterDownloadLocations.push(await this.downloadChapter(mangaName, i));
         }
         return chapterDownloadLocations;
     }
@@ -186,12 +184,40 @@ class Downloader {
     async downloadChapterFromLink(link: string, compression = false): Promise<string> {
         this.verbosePrint("Téléchargement du chapitre depuis le lien " + link);
         const startAttributes = this.getAttributesFromLink(link);
-        let attributes;
-        do {
-            link = await this.downloadImageFromLink(link);
-            attributes = this.getAttributesFromLink(link);
-        } while (attributes.chapter === startAttributes.chapter);
+        const startPage = await this.goToExistingPage(link);
+        const chapterSelectSelector = 'div.div-select:nth-child(2) > .ss-main > .ss-content > .ss-list';
+        await startPage.waitForSelector(chapterSelectSelector);
+        const chapterSelect = await startPage.$(chapterSelectSelector);
+
+        if (chapterSelect === null) {
+            throw "Pas pu récup select scroll, Japdl n'a pas pu déterminer le nombre de pages dans le chapitre du lien " + link;
+
+        }
+        const numberOfPages = await chapterSelect.evaluate((el) => el.childElementCount);
+        console.log("Nombre de page(s): " + numberOfPages);
+        await startPage.close();
+
+        const couldNotDownload: string[] = [];
+        for (let i = 1; i <= numberOfPages; i++) {
+            const pageLink = `${link}${i}.html`;
+            const isDownloaded = await this.downloadImageFromLink(pageLink);
+            if(!isDownloaded){
+                couldNotDownload.push(pageLink);
+            }
+        }
+
         console.log("Le chapitre " + startAttributes.chapter + " a bien été téléchargé");
+        if(couldNotDownload.length > 0){
+            if(couldNotDownload.length > 1){
+                console.log("Les chapitres aux liens suivants n'ont pas pu être téléchargé:", couldNotDownload);
+                console.log("Peut être que ces liens n'ont pas d'image. Veuillez vérifier.");
+                
+            } else {
+                console.log("Le chapitre au lien suivant n'a pas pu être téléchargé:", couldNotDownload[0]);
+                console.log("Peut être que ce lien n'a pas d'image. Veuillez vérifier.");
+            }
+        }
+        
         if (compression) {
             await utils.zipper.zipDirectories(
                 [this.getPathFrom(startAttributes)],
@@ -200,23 +226,16 @@ class Downloader {
         return this.getPathFrom(startAttributes);
     }
 
+    
     /**
      * @param link link to download from
      * @returns next page link
      */
-    async downloadImageFromLink(link: string): Promise<string> {
+     async downloadImageFromLink(link: string): Promise<boolean> {
         this.verbosePrint("Téléchargement de l'image depuis le lien " + link);
-        function createPath(_path: string) {
-            const split = _path.split("/");
-            let path = "";
-            split.forEach((folder: string) => {
-                if (folder === "") return;
-                path += folder + "/";
-                utils.path.mkdirIfDoesntExist(path);
-            });
-        }
-
         const page = await this.goToExistingPage(link);
+
+        this.verbosePrint("Injection du script");
         await page.addScriptTag({
             content: utils.inject,
         });
@@ -224,32 +243,18 @@ class Downloader {
         const popupCanvasSelector = "body > canvas";
         try {
             this.verbosePrint("Attente du script de page...");
-            await page.waitForSelector(popupCanvasSelector, { timeout: 20000 });
+            await page.waitForSelector(popupCanvasSelector, { timeout: 60000 });
             this.verbosePrint("Attente terminée");
         } catch (e) {
-            console.log(
-                "Une erreur s'est produite pour la page " +
-                link +
-                ", japdl va réessayer"
-            );
+            console.log("Cette page n'a pas l'air d'avoir d'images");
             await page.close();
-            return await this.downloadImageFromLink(link);
-        }
-        // get next link
-        this.verbosePrint("Récupération du lien de la page suivante");
-        const element = await page.$("#image");
-        const nextLink = await element?.evaluate((e) =>
-            e.getAttribute("data-next-link")
-        );
-        if (!nextLink) {
-            throw "Le lien vers la page suivante n'a pas été trouvé sur la page " + link;
+            return false;
         }
 
-        // remove elements on page
         const attributes = this.getAttributesFromLink(link);
 
         let path = this.outputDirectory + "/" + attributes.manga + "/" + attributes.chapter + "/";
-        createPath(path);
+        utils.path.createPath(path);
         path += this.getFilenameFrom(attributes);
         const canvasElement = await page.$(popupCanvasSelector);
         let dimensions = await canvasElement?.evaluate((el) => {
@@ -266,13 +271,14 @@ class Downloader {
                 height: 2160
             }
         });
-        if (dimensions === undefined) {
+        if (!dimensions) {
             dimensions = {
                 width: 4096,
                 height: 2160
             };
         }
         await page.setViewport(dimensions);
+
         // remove everything from page except canvas
         await page.evaluate(() => {
             document.querySelectorAll('div').forEach((el) => el.remove());
@@ -284,19 +290,114 @@ class Downloader {
             type: "jpeg",
             quality: 100,
         }).catch((e) => console.log("Erreur dans la capture de l'image", e));
-        console.log(path + " téléchargé");
-        await page.close();
-
-        return this.WEBSITE + nextLink;
+        console.log(attributes.manga + " " + attributes.chapter + " page " + attributes.page + " a été téléchargé à l'endroit: " + path);
+        return true;
     }
 
     /**
-     * 
-     * @param mangaName manga name
-     * @param start start volume
-     * @param end end volume
-     * @returns array of array of paths, where the volumes were downloaded
+     * @param link link to download from
+     * @returns next page link
      */
+    async downloadImageFromLinkWebtoon(link: string): Promise<boolean> {
+        this.verbosePrint("Téléchargement de l'image depuis le lien " + link);
+        const page = await this.goToExistingPage(link);
+
+        this.verbosePrint("Injection du script");
+        await page.addScriptTag({
+            content: utils.inject,
+        });
+
+        const popupCanvasSelector = "body > canvas";
+        try {
+            this.verbosePrint("Attente du script de page...");
+            await page.waitForSelector(popupCanvasSelector, { timeout: 60000 });
+            this.verbosePrint("Attente terminée");
+        } catch (e) {
+            console.log("Cette page n'a pas l'air d'avoir d'images");
+            await page.close();
+            return false;
+        }
+
+        this.verbosePrint("Comptage des images");
+        const nbOfImages = await page.evaluate(() => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const imageEl = document.querySelector('#image');
+                    if (imageEl) {
+                        resolve(imageEl.querySelectorAll('a').length);
+                    }
+                    resolve(-1);
+                });
+            })
+        });
+
+        console.log("Number of images found: " + nbOfImages);
+        if (nbOfImages !== 1) {
+            console.log("Page has a weird amount of images: " + nbOfImages);
+        }
+
+
+        // get next link
+        this.verbosePrint("Récupération du lien de la page suivante");
+        const element = await page.$("#image");
+        const nextLink = await element?.evaluate((e) =>
+            e.getAttribute("data-next-link")
+        );
+        if (!nextLink) {
+            throw "Le lien vers la page suivante n'a pas été trouvé sur la page " + link;
+        }
+
+        const attributes = this.getAttributesFromLink(link);
+
+        let path = this.outputDirectory + "/" + attributes.manga + "/" + attributes.chapter + "/";
+        utils.path.createPath(path);
+        path += this.getFilenameFrom(attributes);
+        const canvasElements = await page.$$(popupCanvasSelector);
+        for (const canvasElement of canvasElements) {
+            let dimensions = await canvasElement?.evaluate((el) => {
+                const width = el.getAttribute('width');
+                const height = el.getAttribute('height');
+                if (width !== null && height !== null) {
+                    return {
+                        width: parseInt(width) * 2,
+                        height: parseInt(height) * 2
+                    }
+                }
+                return {
+                    width: 4096,
+                    height: 2160
+                }
+            });
+            if (dimensions === undefined) {
+                dimensions = {
+                    width: 4096,
+                    height: 2160
+                };
+            }
+            try {
+                await page.setViewport(dimensions);
+            } catch (e) {
+                console.log(e);
+
+            }
+            // remove everything from page except canvas
+            await page.evaluate(() => {
+                document.querySelectorAll('div').forEach((el) => el.remove());
+            });
+            this.verbosePrint("Téléchargement de l'image...");
+            await canvasElement?.screenshot({
+                omitBackground: true,
+                path: path,
+                type: "jpeg",
+                quality: 100,
+            }).catch((e) => console.log("Erreur dans la capture de l'image", e));
+            console.log(path + " téléchargé");
+        }
+
+        return true;
+    }
+
+
     async downloadVolumes(mangaName: string, start: number, end: number): Promise<string[][]> {
         this.verbosePrint("Téléchargement des volumes " + mangaName + " de " + start + " à " + end);
         if (start > end) {
@@ -331,17 +432,23 @@ class Downloader {
         );
 
         this.verbosePrint("Récupéré");
-
         const waiters = [];
         const downloadLocations: Array<string> = [];
         for (const link of toDownloadFrom) {
-            this.verbosePrint("Téléchargement de " + link);
+            console.log("Téléchargement de " + link);
             // should return path of download
-            waiters.push(this.downloadChapterFromLink(link));
+            const chapterPromise = this.downloadChapterFromLink(link);
+            if (this.fast) {
+                waiters.push(chapterPromise);
+            } else {
+                downloadLocations.push(await chapterPromise);
+            }
         }
 
-        for (const waiter of waiters) {
-            downloadLocations.push(await waiter);
+        if (this.fast) {
+            for (const waiter of waiters) {
+                downloadLocations.push(await waiter);
+            }
         }
         const cbrName = this.getCbrFrom(mangaName, volumeNumber, "volume");
         console.log("En train de faire le cbr " + mangaName + " volume " + volumeNumber + "...");
@@ -440,7 +547,7 @@ class Downloader {
      */
     async destroy(): Promise<void> {
         this.verbosePrint("Destruction du downloader");
-        if(this.browser)
+        if (this.browser)
             await this.browser.close();
     }
 }

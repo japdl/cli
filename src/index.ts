@@ -1,30 +1,17 @@
 import Interface from "./interface";
 
-function getFlags() {
-    const flagStrings: string[] = ['h', 'v'];
-    const regex = new RegExp(`-${flagStrings.join('*')}*[^${flagStrings.join('')}]`, 'g');
-    const flags: Record<string, boolean> = {};
-    
-    process.argv.filter((arg) => arg.startsWith('-')).forEach((arg) => {
-        const match = [...arg.matchAll(regex)];
-        if(match.length){
-            console.log("Mauvais argument: " + arg + ", l'argument n'est pas reconnu.");
-            process.exit(1);
-        } else {
-            flagStrings.forEach((flag) => {
-                if(arg.includes(flag)){
-                    if(!flags[flag]){
-                        flags[flag] = true;
-                    } else {
-                        throw `Le flag '${flag}' ne peut pas utilisé plusieurs fois`;
-                    }
-                }
-            })
-        }
-    });
-    return flags;
+import yargs from "yargs";
+
+
+const flags = yargs(process.argv.slice(2))
+    .option("v", { alias: "verbose", boolean: true, default: false })
+    .option("h", { alias: "headless", boolean: true, default: false })
+    .option("f", { alias: "fast", boolean: true, default: false })
+    .argv;
+
+if (flags.f) {
+    console.log("Attention! Le flag 'fast' est activé. Le programme ne garantit plus de récupérer toutes les images des chapitres. Une bonne connexion et un bon ordinateur est très fortement recommandé pour l'utilisation de ce flag. Dans le cas contraire, des images pourraient manquer.");
 }
-const flags = getFlags();
 const inter = new Interface(flags);
 inter.onready.then(() => {
     inter.start();
@@ -32,3 +19,4 @@ inter.onready.then(() => {
     console.log(error);
     process.exit(1);
 });
+// */

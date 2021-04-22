@@ -9,7 +9,14 @@ class Interface extends Downloader {
     downloader!: Downloader;
     commands: Record<string, (args: string[]) => Promise<void>>;
 
-    constructor(flags: Record<string, boolean>) {
+    constructor(flags: {
+        [x: string]: unknown;
+        v: boolean;
+        h: boolean;
+        f: boolean;
+        _: (string | number)[];
+        $0: string;
+    }) {
         super(flags);
         this.rl = readline.createInterface({
             input: process.stdin,
@@ -21,9 +28,11 @@ class Interface extends Downloader {
             help: async (): Promise<void> => {
                 this.displayHelp();
             },
+            aide: async () :Promise<void> => {
+                this.displayHelp();
+            },
             telecharge: async (args: string[]): Promise<void> => {
                 if (args.length < 3) {
-                    console.log("Il manque des arguments");
                     return;
                 }
                 const mangaName = args[0];
@@ -217,7 +226,13 @@ class Interface extends Downloader {
      * Starts interface
      */
     start(): void {
-        this.displayHelp();
+        console.log("Commandes:");
+        console.log("\t- help | aide");
+        console.log("\t- telecharge");
+        console.log("\t- zip");
+        console.log("\t- info");
+        console.log("\t- q | quit");
+        
         this.printSeparator();
         this.handleInput();
     }

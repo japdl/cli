@@ -132,7 +132,16 @@ const path = {
             }
         }
         throw "Chrome n'a pas été trouvé sur l'ordinateur. Veuillez utiliser le fichier config.txt pour y spécifier le chemin.";
-    }
+    },
+    createPath(_path: string): void {
+        const split = _path.split("/");
+        let path = "";
+        split.forEach((folder: string) => {
+            if (folder === "") return;
+            path += folder + "/";
+            this.mkdirIfDoesntExist(path);
+        });
+    },
 }
 
 /**
