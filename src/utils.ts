@@ -39,7 +39,10 @@ const path = {
         aliases: string[];
         execute(inter: Interface, args: string[]): Promise<void>;
     }>> {
-        const files = fs.readdirSync("./commands").filter((filename) => filename.endsWith('.ts')).map((filename) => filename.split('.')[0]);
+        const files = fs.readdirSync(__dirname + "/../commands").filter((filename) => filename.endsWith('.js')).map((filename) => filename.split('.')[0]);
+        console.log(files);
+        
+        
         const commands: Record<string, {
             description: string;
             usage: string;
@@ -51,7 +54,7 @@ const path = {
             commands[file] = imported;
 
             // for each alias, copy function to alias key
-            imported.aliases.forEach((alias:string) => {
+            imported.aliases.forEach((alias: string) => {
                 commands[alias] = imported;
             });
         }

@@ -18,7 +18,9 @@
       "node14-win-x64"
     ],
     "outputPath": "dist",
-    "assets": "node_modules/puppeteer-extra-plugin-stealth/**/*.*"
+    "assets": ["node_modules/puppeteer-extra-plugin-stealth/**/*.*",
+                "js/commands/**/*.*"],
+    "scripts": ["js/**/*.js"]
   },
   "bin": "js/src/index.js",
   "keywords": [],
