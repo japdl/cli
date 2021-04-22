@@ -40,8 +40,6 @@ const path = {
         execute(inter: Interface, args: string[]): Promise<void>;
     }>> {
         const files = fs.readdirSync(__dirname + "/../commands").filter((filename) => filename.endsWith('.js')).map((filename) => filename.split('.')[0]);
-        console.log(files);
-        
         
         const commands: Record<string, {
             description: string;
