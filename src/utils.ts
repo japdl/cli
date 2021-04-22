@@ -39,8 +39,7 @@ const path = {
         aliases: string[];
         execute(inter: Interface, args: string[]): Promise<void>;
     }>> {
-        const files = fs.readdirSync(__dirname + "/../commands").filter((filename) => filename.endsWith('.js')).map((filename) => filename.split('.')[0]);
-        
+        const files = this.getCommandsKeys();
         const commands: Record<string, {
             description: string;
             usage: string;
@@ -57,6 +56,9 @@ const path = {
             });
         }
         return commands;
+    },
+    getCommandsKeys(): string[] {
+        return fs.readdirSync(__dirname + "/../commands").filter((filename) => filename.endsWith('.js')).map((filename) => filename.split('.')[0]);
     },
     tellIfDoesntExist(locations: string[]): boolean {
         const found = [];

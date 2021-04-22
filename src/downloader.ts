@@ -37,7 +37,7 @@ class Downloader {
         this.verbose = flags.v;
         const headless = !flags.h;
         this.fast = flags.f;
-        this.timeout = flags.t;
+        this.timeout = flags.t * 1000;
         const variables = utils.path.getConfigVariables();
         this.chromePath = utils.path.getChromePath(variables.chromePath);
         this.outputDirectory = variables.outputDirectory;

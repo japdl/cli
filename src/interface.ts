@@ -13,6 +13,7 @@ class Interface extends Downloader {
         aliases: string[];
         execute(inter: Interface, args: string[]): Promise<void>;
     }>>;
+    commandsKeys: string[];
 
     constructor(flags: {
         [x: string]: unknown;
@@ -30,6 +31,7 @@ class Interface extends Downloader {
             terminal: false,
         });
         this.commands = utils.path.getCommands();
+        this.commandsKeys = utils.path.getCommandsKeys();
     }
     /**
      * Quit program after destroying downloader
@@ -71,6 +73,15 @@ class Interface extends Downloader {
         console.log("\tZip le dossier d'image du chapitre 999 en cbr");
         console.log("- info -> info one-piece");
         console.log("\tDonne le nombre de chapitre et volume du manga");
+    }
+    dynamicDisplayHelp(): void {
+        this.commands.then((commands) => {
+            this.commandsKeys.forEach((key: string) => {
+                const command = commands[key];
+                console.log("- " + key + ": " + command.description);
+                console.log("\tusage: " + command.usage + "\n");
+            });
+        });
     }
     /**
      * returns a resolved promise when a line is entered in the terminal with the line as the return string

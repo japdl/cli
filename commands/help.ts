@@ -5,6 +5,6 @@ module.exports = {
     usage: "help",
     aliases: ["aide", "h"],
     async execute(inter: Interface): Promise<void> {
-        inter.displayHelp();
+        inter.dynamicDisplayHelp();
     }
 }
