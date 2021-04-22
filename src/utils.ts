@@ -1,5 +1,6 @@
 import archiver from "archiver";
 import fs from "fs";
+import Interface from "./interface";
 
 /**
  * Zipper contains functions that helps zipping
@@ -32,6 +33,30 @@ const zipper = {
  * Contains path functions to help manage paths and files
  */
 const path = {
+    async getCommands(): Promise<Record<string, {
+        description: string;
+        usage: string;
+        aliases: string[];
+        execute(inter: Interface, args: string[]): Promise<void>;
+    }>> {
+        const files = fs.readdirSync("./commands").filter((filename) => filename.endsWith('.ts')).map((filename) => filename.split('.')[0]);
+        const commands: Record<string, {
+            description: string;
+            usage: string;
+            aliases: string[];
+            execute(inter: Interface, args: string[]): Promise<void>;
+        }> = {};
+        for (const file of files) {
+            const imported = await import("../commands/" + file).catch((e) => console.log(e));
+            commands[file] = imported;
+
+            // for each alias, copy function to alias key
+            imported.aliases.forEach((alias:string) => {
+                commands[alias] = imported;
+            });
+        }
+        return commands;
+    },
     tellIfDoesntExist(locations: string[]): boolean {
         const found = [];
         locations.forEach((location) => {

@@ -7,7 +7,12 @@ import utils from "./utils";
 class Interface extends Downloader {
     rl: readline.Interface;
     downloader!: Downloader;
-    commands: Record<string, (args: string[]) => Promise<void>>;
+    commands: Promise<Record<string,  {
+        description: string;
+        usage: string;
+        aliases: string[];
+        execute(inter: Interface, args: string[]): Promise<void>;
+    }>>;
 
     constructor(flags: {
         [x: string]: unknown;
@@ -23,125 +28,7 @@ class Interface extends Downloader {
             output: process.stdout,
             terminal: false,
         });
-
-        this.commands = {
-            help: async (): Promise<void> => {
-                this.displayHelp();
-            },
-            aide: async () :Promise<void> => {
-                this.displayHelp();
-            },
-            telecharge: async (args: string[]): Promise<void> => {
-                if (args.length < 3) {
-                    return;
-                }
-                const mangaName = args[0];
-                const type = args[1];
-                if (type !== "volume" && type !== "chapitre") {
-                    console.log("japdl ne peut pas télécharger de '" + type + "', il ne peut télécharger que:");
-                    console.log("- 'volume'");
-                    console.log("- 'chapitre'");
-                    return;
-                }
-                let range!: MangaRange;
-                let number!: number;
-                if (args[2].indexOf('-') !== -1) {
-                    const split = args[2].split('-');
-                    range = { start: parseInt(split[0]), end: parseInt(split[1]) };
-                } else {
-                    number = parseInt(args[2]);
-                    if (isNaN(number)) {
-                        console.log("le numéro de" + type + "n'a pas pu être lu");
-                        return;
-                    }
-                }
-                if (args[3] === undefined) {
-                    args[3] = '';
-                }
-                switch (type) {
-                    case "volume": {
-                        if (range) {
-                            const downloadLocationsArray = await this.downloadVolumes(mangaName, range.start, range.end);
-                            downloadLocationsArray.forEach((downloadLocations) => {
-                                utils.path.rmIfSFlag(args, downloadLocations);
-                            });
-                        } else {
-                            const downloadLocations = await this.downloadVolume(mangaName, number);
-                            utils.path.rmIfSFlag(args, downloadLocations);
-                        }
-                        break;
-                    }
-                    case "chapitre":
-                        if (range) {
-                            const downloadLocations = await this.downloadChapters(mangaName, range.start, range.end);
-                            utils.path.rmIfSFlag(args, downloadLocations);
-                        } else {
-                            if (args[3].toLowerCase().indexOf('f') === -1 && utils.path.alreadyDownloaded(this.outputDirectory + "/" + mangaName + "/" + number)) {
-                                console.log("Le chapitre est déjà téléchargé, si vous voulez quand même le re-télécharger,");
-                                console.log("Il faut spécifier l'argument 'f' après le numéro de chapitre.");
-                                return;
-                            }
-                            const downloadLocation = await this.downloadChapter(mangaName, number);
-                            utils.path.rmIfSFlag(args, [downloadLocation]);
-                        }
-                        break;
-                    default:
-                        console.log("Le type de téléchargement n'a pas été reconnu, il doit être soit 'volume', soit 'chapitre'");
-                        break;
-                }
-            },
-            zip: async (args: string[]): Promise<void> => {
-                if(args.length < 3){
-                    throw "Il manque des arguments à cette commande";
-                }
-                const mangaName = args[0];
-                const type = args[1];
-                if (type !== "volume" && type !== "chapitre") {
-                    throw `japdl ne peut pas zipper de ${type}, il ne peut zipper que:
-                    - 'volume'
-                    - 'chapitre'`
-                }
-                const number = parseInt(args[2]);
-                let toZip: string[] = [];
-                if (type === 'chapitre') {
-                    const path = this.getPathFrom({ chapter: number.toString(), manga: mangaName, page: "" + 1 });
-                    console.log(path);
-                    toZip = [path];
-                }
-                if (type === 'volume') {
-                    const chapters: string[] = await this.fetchVolumeChapters(number, mangaName);
-                    chapters.forEach((chapter) => {
-                        toZip.push(this.getPathFrom(chapter));
-                    });
-                }
-                const isWorthZipping = utils.path.tellIfDoesntExist(toZip);
-                if (isWorthZipping) {
-                    utils.zipper.zipDirectories(toZip, this.getCbrFrom(mangaName, number, type));
-                }
-            },
-            info: async (args: string[]): Promise<void> => {
-                function prettyPrint(value: number, type: string) {
-                    console.log(`${mangaName} possède ${value} ${type}${(value > 1) ? "s" : ""}`);
-                }
-                const mangaName = args[0];
-                const mangaStats: MangaStats = await this.fetchStats(mangaName);
-                if (!isNaN(mangaStats.volumes)) {
-                    prettyPrint(mangaStats.volumes, "volume");
-                }
-                if (!isNaN(mangaStats.chapters)) {
-                    prettyPrint(mangaStats.chapters, "chapitre");
-                }
-                if (mangaName !== mangaStats.name) {
-                    console.log(`Le manga '${mangaName}' s'appelle '${mangaStats.name}' sur japscan`);
-                }
-            },
-            quit: async (): Promise<void> => {
-                this.quit();
-            },
-            q: async (): Promise<void> => {
-                this.quit();
-            },
-        };
+        this.commands = utils.path.getCommands();
     }
     /**
      * Quit program after destroying downloader
@@ -204,12 +91,15 @@ class Interface extends Downloader {
         const split: string[] = line.split(/ +/);
         const command: string = split[0].toLowerCase();
         const args: string[] = split.slice(1);
-        const fn = this.commands[command];
-        if (fn === undefined) {
+        const commandsReady = await this.commands;
+        
+        const commandObject = commandsReady[command];
+
+        if (commandObject === undefined) {
             console.log("La commande n'existe pas, tapez 'help' pour voir l'aide");
         } else {
             try {
-                await fn(args);
+                await commandObject.execute(this, args);
             } catch (e) {
                 console.log("Une erreur s'est produite:", e);
             }
@@ -227,11 +117,11 @@ class Interface extends Downloader {
      */
     start(): void {
         console.log("Commandes:");
-        console.log("\t- help | aide");
-        console.log("\t- telecharge");
-        console.log("\t- zip");
-        console.log("\t- info");
-        console.log("\t- q | quit");
+        console.log("\t- help | aide | h");
+        console.log("\t- telecharge | t");
+        console.log("\t- zip | cbr | z");
+        console.log("\t- info | i");
+        console.log("\t- quit | q");
         
         this.printSeparator();
         this.handleInput();

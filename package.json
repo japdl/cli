@@ -2,7 +2,7 @@
   "name": "japdl",
   "version": "1.0.0",
   "description": "",
-  "main": "js/index.js",
+  "main": "js/src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node .",
@@ -20,7 +20,7 @@
     "outputPath": "dist",
     "assets": "node_modules/puppeteer-extra-plugin-stealth/**/*.*"
   },
-  "bin": "js/index.js",
+  "bin": "js/src/index.js",
   "keywords": [],
   "author": "",
   "license": "ISC",
