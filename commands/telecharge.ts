@@ -2,15 +2,12 @@ import Interface from "../src/interface";
 import utils from "../src/utils";
 
 module.exports = {
-    description: "Télécharge le volume|chapitre du manga indiqué, le flag 's' supprime les dossiers d'images après le téléchargement, et 'f' force le téléchargement si les dossiers sont déjà trouvés sur le disque.",
-    usage: "telecharge <manga-name> <volume|chapitre> <numéro(s)> <optionnel: s et/ou f>",
+    description: "Télécharge le volume|chapitre du manga indiqué, puis en fait un cbr. Le flag 's' supprime les dossiers d'images après le téléchargement, et 'f' force le téléchargement si les dossiers sont déjà trouvés sur le disque.",
+    usage: "telecharge <nom-du-manga> <volume|chapitre> <numéro(s)> <optionnel: s et/ou f>",
     example: ["telecharge one-piece volume 99 s", "telecharge one-piece volume 99", "telecharge chainsaw-man chapitre 50", "telecharge fire-punch volume 1-8", "telecharge demon-slayer chapitre 1-50"],
     aliases: ["t"],
     argsNeeded: 3,
     async execute(inter: Interface, args: string[]): Promise<void> {
-        if (args.length < 3) {
-            return;
-        }
         const mangaName = args[0];
         const type = args[1];
         if (type !== "volume" && type !== "chapitre") {

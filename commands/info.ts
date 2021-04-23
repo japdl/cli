@@ -1,8 +1,8 @@
 import Interface from "../src/interface";
 
 module.exports = {
-    description: "Donne le nombre de volumes et de chapitres du manga donné en paramètre, si c'est possible de récupérer cette information.",
-    usage: "info <manga-name>",
+    description: "Donne le nombre de volumes et de chapitres du manga donné en paramètre, s'il est possible de récupérer cette information.",
+    usage: "info <nom-du-manga>",
     aliases: ["i"],
     example: ["info one-piece"],
     argsNeeded: 1,

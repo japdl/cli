@@ -76,17 +76,16 @@ class Interface extends Downloader {
         console.log("- info -> info one-piece");
         console.log("\tDonne le nombre de chapitre et volume du manga");
     }
-    dynamicDisplayHelp(): void {
-        this.commands.then((commands) => {
-            this.commandsKeys.forEach((key: string) => {
-                const command = commands[key];
-                console.log("- " + key + ": " + command.description);
-                console.log("\tusage: " + command.usage);
-                if (command.argsNeeded) {
-                    console.log("\texemple" + ((command.example.length > 1) ? "s" : "") + ": \n\t\t- " + command.example.join('\n\t\t- '));
-                }
-                console.log();
-            });
+    async dynamicDisplayHelp(): Promise<void> {
+        const commands = await this.commands;
+        this.commandsKeys.forEach((key: string) => {
+            const command = commands[key];
+            console.log("- " + key + ": " + command.description);
+            console.log("\tusage: " + command.usage);
+            if (command.argsNeeded) {
+                console.log("\texemple" + ((command.example.length > 1) ? "s" : "") + ": \n\t\t- " + command.example.join('\n\t\t- '));
+            }
+            console.log();
         });
     }
     /**
@@ -148,9 +147,10 @@ class Interface extends Downloader {
      * Starts interface
      */
     start(): void {
-        this.displayCommands();
-        this.printSeparator();
-        this.handleInput();
+        this.dynamicDisplayHelp().then(() => {
+            this.printSeparator();
+            this.handleInput();
+        });   
     }
 }
 

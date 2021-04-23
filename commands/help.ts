@@ -1,7 +1,7 @@
 import Interface from "../src/interface";
 
 module.exports = {
-    description: "Montre l'aide dans la console",
+    description: "Affiche l'aide",
     usage: "help",
     aliases: ["aide", "h"],
     argsNeeded: 0,

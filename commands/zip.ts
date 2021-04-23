@@ -3,14 +3,11 @@ import utils from "../src/utils";
 
 module.exports = {
     description: "Fabrique un cbr du volume|chapitre indiqué",
-    usage: "zip <manga-name> <volume|chapitre> <numéro>",
+    usage: "zip <nom-du-manga> <volume|chapitre> <numéro>",
     aliases: ["z", "cbr"],
     example: ["zip one-piece volume 99", "zip chainsaw-man chapitre 50"],
     argsNeeded: 3,
     async execute(inter: Interface, args: string[]): Promise<void> {
-        if (args.length < 3) {
-            throw "Il manque des arguments à cette commande";
-        }
         const mangaName = args[0];
         const type = args[1];
         if (type !== "volume" && type !== "chapitre") {

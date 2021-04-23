@@ -4,20 +4,18 @@
   "description": "",
   "main": "js/src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node .",
-    "compile": "pkg . --out-path ./build",
-    "tsc": "tsc -w",
+    "compile": "pkg .",
+    "tsc": "tsc",
+    "tscw": "tsc -w",
     "lint": "npx eslint .",
     "lintfix": "npx eslint . --fix"
   },
   "pkg": {
     "targets": [
-      "node14-linux-x64",
-      "node14-macos-x64",
       "node14-win-x64"
     ],
-    "outputPath": "dist",
+    "outputPath": "build",
     "assets": ["node_modules/puppeteer-extra-plugin-stealth/**/*.*",
                 "js/commands/**/*.*"],
     "scripts": ["js/**/*.js"]
