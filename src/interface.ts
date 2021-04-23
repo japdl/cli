@@ -7,10 +7,12 @@ import utils from "./utils";
 class Interface extends Downloader {
     rl: readline.Interface;
     downloader!: Downloader;
-    commands: Promise<Record<string,  {
+    commands: Promise<Record<string, {
         description: string;
         usage: string;
         aliases: string[];
+        example: string[];
+        argsNeeded: number;
         execute(inter: Interface, args: string[]): Promise<void>;
     }>>;
     commandsKeys: string[];
@@ -79,7 +81,11 @@ class Interface extends Downloader {
             this.commandsKeys.forEach((key: string) => {
                 const command = commands[key];
                 console.log("- " + key + ": " + command.description);
-                console.log("\tusage: " + command.usage + "\n");
+                console.log("\tusage: " + command.usage);
+                if (command.argsNeeded) {
+                    console.log("\texemple" + ((command.example.length > 1) ? "s" : "") + ": \n\t\t- " + command.example.join('\n\t\t- '));
+                }
+                console.log();
             });
         });
     }
@@ -87,7 +93,7 @@ class Interface extends Downloader {
      * returns a resolved promise when a line is entered in the terminal with the line as the return string
      * @returns line it got
      */
-    getLine(): Promise<string>{
+    getLine(): Promise<string> {
         return new Promise((resolve) => {
             this.closeInput();
             this.rl.on('line', (line) => resolve(line));
@@ -104,12 +110,17 @@ class Interface extends Downloader {
         const command: string = split[0].toLowerCase();
         const args: string[] = split.slice(1);
         const commandsReady = await this.commands;
-        
+
         const commandObject = commandsReady[command];
 
         if (commandObject === undefined) {
             console.log("La commande n'existe pas, tapez 'help' pour voir l'aide");
         } else {
+            if (commandObject.argsNeeded > args.length) {
+                console.log("Il n'y a pas assez d'arguments pour cette commande.");
+                console.log("usage: " + commandObject.usage);
+                console.log("Des exemples sont présents dans l'aide");
+            }
             try {
                 await commandObject.execute(this, args);
             } catch (e) {
@@ -121,20 +132,23 @@ class Interface extends Downloader {
     /**
      * Prints a line of separator characters in the terminal
      */
-    printSeparator(): void{
+    printSeparator(): void {
         console.log("---------------------");
+    }
+
+    displayCommands(): void {
+        this.commands.then((commands) => {
+            this.commandsKeys.forEach((key: string) => {
+                const command = commands[key];
+                console.log("\t- " + ([key].concat(command.aliases)).join(' | '));
+            });
+        });
     }
     /**
      * Starts interface
      */
     start(): void {
-        console.log("Commandes:");
-        console.log("\t- help | aide | h");
-        console.log("\t- telecharge | t");
-        console.log("\t- zip | cbr | z");
-        console.log("\t- info | i");
-        console.log("\t- quit | q");
-        
+        this.displayCommands();
         this.printSeparator();
         this.handleInput();
     }

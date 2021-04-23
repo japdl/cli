@@ -37,6 +37,8 @@ const path = {
         description: string;
         usage: string;
         aliases: string[];
+        example: string[];
+        argsNeeded: number;
         execute(inter: Interface, args: string[]): Promise<void>;
     }>> {
         const files = this.getCommandsKeys();
@@ -44,6 +46,8 @@ const path = {
             description: string;
             usage: string;
             aliases: string[];
+            example: string[];
+            argsNeeded: number;
             execute(inter: Interface, args: string[]): Promise<void>;
         }> = {};
         for (const file of files) {
