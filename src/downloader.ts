@@ -232,7 +232,7 @@ class Downloader {
     
     /**
      * @param link link to download from
-     * @returns next page link
+     * @returns if image could be downloaded
      */
      async downloadImageFromLink(link: string): Promise<boolean> {
         this.verbosePrint("Téléchargement de l'image depuis le lien " + link);
