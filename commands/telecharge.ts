@@ -6,6 +6,7 @@ module.exports = {
     usage: "telecharge <manga-name> <volume|chapitre> <numéro(s)> <optionnel: s et/ou f>",
     example: ["telecharge one-piece volume 99 s", "telecharge one-piece volume 99", "telecharge chainsaw-man chapitre 50", "telecharge fire-punch volume 1-8", "telecharge demon-slayer chapitre 1-50"],
     aliases: ["t"],
+    argsNeeded: 3,
     async execute(inter: Interface, args: string[]): Promise<void> {
         if (args.length < 3) {
             return;

@@ -4,6 +4,8 @@ module.exports = {
     description: "Donne le nombre de volumes et de chapitres du manga donné en paramètre, si c'est possible de récupérer cette information.",
     usage: "info <manga-name>",
     aliases: ["i"],
+    example: ["info one-piece"],
+    argsNeeded: 1,
     async execute(inter: Interface, args: string[]): Promise<void> {
         function prettyPrint(value: number, type: string) {
             console.log(`${mangaName} possède ${value} ${type}${(value > 1) ? "s" : ""}`);
