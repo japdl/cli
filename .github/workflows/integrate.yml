@@ -1,13 +1,5 @@
 name : Node continuous Integration
-
-on:
-push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
+on: [push, pull_request]
 jobs:
   test_pull_request:
     runs-on: ubuntu-latest
