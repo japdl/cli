@@ -12,12 +12,11 @@ describe("Downloader tests", function () {
   });
 });
 describe("Downloading one-piece chapter 999", function () {
-  it("download one piece chapter 999", function (done) {
+  it("download one piece chapter 999", function () {
     this.timeout(1000 * 60 * 5); // 5 minutes
-    downloader.onready.then(async () => {
-      await downloader.downloadChapter("one-piece", 999);
-      done();
-    });
+    return new Promise((resolve, reject) => {
+            downloader.downloadChapter("one-piece", 999).then(() => resolve(undefined)).catch((error) => reject(error));
+    })
   });
   it("number of open chrome pages must be 1, the about blank page", async function () {
     return new Promise(function (resolve, reject) {
