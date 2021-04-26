@@ -4,23 +4,6 @@ import path from "path";
 
 let downloader: Downloader;
 
-function clearTestDownloadFolder() {
-  const onePieceFolder = path.join(downloader.outputDirectory, "one-piece");
-  fs.rmSync(path.join(onePieceFolder, "999"), {
-    force: true,
-    recursive: true,
-  });
-  fs.rmSync(downloader.getCbrFrom("one-piece", 999, "chapitre"), {
-    force: true,
-  });
-  if(!fs.readdirSync(onePieceFolder).length){
-      fs.rmdirSync(onePieceFolder);
-  }
-  if(!fs.readdirSync(downloader.outputDirectory).length){
-    fs.rmdirSync(downloader.outputDirectory);
-}
-}
-
 describe("Downloader tests", function () {
   it("Downloader instantiation", function () {
     this.timeout(0);
@@ -29,7 +12,6 @@ describe("Downloader tests", function () {
   });
 });
 describe("Downloading one-piece chapter 999", function () {
-  before("Clear one-piece folder", clearTestDownloadFolder);
   it("download one piece chapter 999", function (done) {
     this.timeout(1000 * 60 * 5); // 5 minutes
     downloader.onready.then(async () => {
@@ -83,5 +65,4 @@ describe("Downloading one-piece chapter 999", function () {
       throw new Error("cbr was not created at " + cbrName);
     }
   });
-  after("Clear one-piece folder", clearTestDownloadFolder);
 });
