@@ -41,7 +41,7 @@ describe("Downloading one-piece chapter 999", function () {
     );
     if (!fs.existsSync(folderPath)) {
       throw new Error(
-        "Folder " + folderPath + "was not created after download"
+        "Folder " + folderPath + " was not created after download"
       );
     }
   });
