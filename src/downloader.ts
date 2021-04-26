@@ -44,9 +44,7 @@ class Downloader {
     const headless = !flags.h;
     this.fast = flags.f;
     this.timeout = flags.t * 1000;
-    const variables = utils.path.getConfigVariables();
-    this.chromePath = utils.path.getChromePath(variables.chromePath);
-    this.outputDirectory = variables.outputDirectory;
+    this.outputDirectory = "manga";
     this.onready = new Promise((resolve, reject) => {
       puppeteer
         .launch({
