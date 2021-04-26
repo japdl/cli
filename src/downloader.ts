@@ -54,7 +54,6 @@ class Downloader {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           headless: headless,
-          executablePath: this.chromePath,
         })
         .then((browser) => {
           this.browser = browser;
