@@ -11,7 +11,7 @@ module.exports = {
             console.log(`${mangaName} possède ${value} ${type}${(value > 1) ? "s" : ""}`);
         }
         const mangaName = args[0];
-        const mangaStats: MangaStats = await inter.fetchStats(mangaName);
+        const mangaStats = await inter.fetchStats(mangaName);
         if (!isNaN(mangaStats.volumes)) {
             prettyPrint(mangaStats.volumes, "volume");
         }
