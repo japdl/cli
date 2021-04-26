@@ -95,7 +95,10 @@ const path = {
         });
         fs.rmdirSync(path);
     },
-    getConfigVariables(): ConfigVariables {
+    getConfigVariables(): {
+        chromePath: string,
+        outputDirectory: string
+    } {
         let fileContent;
         try {
             fileContent = fs.readFileSync("./config.txt", { encoding: "utf-8" }).split(/\n+/);

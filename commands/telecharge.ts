@@ -16,7 +16,7 @@ module.exports = {
             console.log("- 'chapitre'");
             return;
         }
-        let range!: MangaRange;
+        let range!: {start: number, end: number};
         let number!: number;
         if (args[2].indexOf('-') !== -1) {
             const split = args[2].split('-');

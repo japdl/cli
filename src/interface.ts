@@ -17,16 +17,8 @@ class Interface extends Downloader {
     }>>;
     commandsKeys: string[];
 
-    constructor(flags: {
-        [x: string]: unknown;
-        v: boolean;
-        h: boolean;
-        f: boolean;
-        t: number;
-        _: (string | number)[];
-        $0: string;
-    }) {
-        super(flags);
+    constructor() {
+        super();
         this.rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
@@ -40,8 +32,9 @@ class Interface extends Downloader {
      */
     async quit(): Promise<void> {
         console.log("Merci d'avoir utilisé japdl!");
+        this.closeInput();
+        this.rl.close();
         await this.destroy();
-        process.exit(0);
     }
     /**
      * Starts reading commands from terminal
