@@ -247,7 +247,16 @@ class Downloader {
     const startPage = await this.goToExistingPage(link);
     const chapterSelectSelector =
       "div.div-select:nth-child(2) > .ss-main > .ss-content > .ss-list";
-    await startPage.waitForSelector(chapterSelectSelector);
+    try {
+      this.verbosePrint("Attente du script de page...");
+      await startPage.waitForSelector(chapterSelectSelector, {
+        timeout: this.timeout,
+      });
+      this.verbosePrint("Attente terminée");
+    } catch (e) {
+      await startPage.close();
+      return await this.downloadChapterFromLink(link, compression);
+    }
     const chapterSelect = await startPage.$(chapterSelectSelector);
 
     if (chapterSelect === null) {
