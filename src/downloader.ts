@@ -83,7 +83,11 @@ class Downloader {
    */
   async goToExistingPage(link: string): Promise<Page> {
     const page = await this.browser.newPage();
-    await page.goto(link);
+    try {
+    await page.goto(link, {timeout: this.timeout});
+    } catch(e) {
+        return await this.goToExistingPage(link);
+    }
     if (await this.isJapscan404(page)) {
       throw "La page " + link + " n'existe pas (404)";
     }
