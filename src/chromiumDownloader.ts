@@ -5,8 +5,8 @@ import utils from "./utils";
 (async () => {
     const revision = utils.path.getChromeInfos().revision;
     const platforms = [
-        //'linux'
-        'win64'
+        'linux'
+        ,'win64'
         //,'mac'
     ];
     for(const platform of platforms){
