@@ -20,6 +20,7 @@ jobs:
       - run: npm run build
 
       - name: zip files
+        uses: papeloto/action-zip@v1
         with:
             files: build/
             dest: japdl.zip
