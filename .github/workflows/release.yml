@@ -17,6 +17,7 @@ jobs:
       - run: npm run tsc
       - run: npm run download
       - run: npm run build
+      - run: ls build/
 # windows zip with chrome
       - run: mkdir -p windows/.local-chromium/win64-869685
       - run: cp build/japdl-win.exe windows
@@ -35,7 +36,6 @@ jobs:
             files: build/japdl-win.exe config.txt
             dest: japdl-windows-no-chrome.zip
 
-
 # linux zip with chrome
       - run: mkdir -p linux/.local-chromium/linux-869685
       - run: cp build/japdl-linux linux
@@ -53,6 +53,8 @@ jobs:
         with:
             files: build/japl-linux config.txt
             dest: japdl-linux-no-chrome.zip
+
+      - run: ls
 
       - name: Release
         uses: softprops/action-gh-release@v1
