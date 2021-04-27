@@ -28,7 +28,7 @@ jobs:
       - name: zip windows files
         uses: papeloto/action-zip@v1
         with:
-            files: [build/japdl-win.exe, .local-chromium/win64-869685]
+            files: build/japdl-win.exe .local-chromium/win64-869685
             dest: japdl-exe.zip
 
       - name: Release
