@@ -18,7 +18,7 @@ jobs:
       - run: npm run download
       - run: npm run build
 
-      - run: mkdir -r windows/.local-chromium/win64-869685
+      - run: mkdir -p windows/.local-chromium/win64-869685
       - run: cp build/japdl-win.exe windows
       - run: cp .local-chromium/win64-869685 windows/.local-chromium/win64-869685
 
