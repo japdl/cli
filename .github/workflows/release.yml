@@ -51,7 +51,7 @@ jobs:
       - run: "cp config_linux.txt config.txt"
       - uses: papeloto/action-zip@v1
         with:
-            files: build/japl-linux config.txt
+            files: build/japdl-linux config.txt
             dest: japdl-linux-no-chrome.zip
 
       - run: ls
