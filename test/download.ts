@@ -22,11 +22,12 @@ describe("Downloading one-piece chapter 999", function () {
     return new Promise(function (resolve, reject) {
       downloader.browser.pages().then((pages) => {
         if (pages.length !== 1) {
-            const pagesUrl = '[' + pages.join(' | ') + ']';
+            const pagesUrl: string[] = [];
+            pages.forEach((page) => pagesUrl.push(page.url()));
           reject(
             "The number of pages after download is " +
               pages.length +
-              " instead of 1, pages url are: " + pagesUrl
+              " instead of 1, pages url are: " + pagesUrl.join(' | ')
           );
         } else {
           resolve();
