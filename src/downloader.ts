@@ -70,6 +70,8 @@ class Downloader {
                 this.chromePath +
                 ") n'est pas correct"
             );
+          } else if (e.toString().includes("Could not find expected browser")){
+              reject("Chromium n'a pas été trouvé à côté de l'executable");
           }
           reject("Une erreur s'est produite lors de l'initialisation: " + e);
         });
@@ -89,7 +91,7 @@ class Downloader {
         return await this.goToExistingPage(link);
     }
     if (await this.isJapscan404(page)) {
-      throw "La page " + link + " n'existe pas (404)";
+      throw new Error("La page " + link + " n'existe pas (404)");
     }
     this.verbosePrint("Création de la page " + link);
     return page;
@@ -227,7 +229,7 @@ class Downloader {
         end
     );
     if (start > end) {
-      throw "Le début ne peut pas être plus grand que la fin";
+      throw new Error("Le début ne peut pas être plus grand que la fin");
     }
     const chapterDownloadLocations: Array<string> = [];
     for (let i = start; i <= end; i++) {
@@ -264,7 +266,7 @@ class Downloader {
     const chapterSelect = await startPage.$(chapterSelectSelector);
 
     if (chapterSelect === null) {
-      throw (
+      throw new Error(
         "Pas pu récup select scroll, Japdl n'a pas pu déterminer le nombre de pages dans le chapitre du lien " +
         link
       );
@@ -455,7 +457,7 @@ class Downloader {
       e.getAttribute("data-next-link")
     );
     if (!nextLink) {
-      throw (
+      throw new Error(
         "Le lien vers la page suivante n'a pas été trouvé sur la page " + link
       );
     }
@@ -526,7 +528,7 @@ class Downloader {
       "Téléchargement des volumes " + mangaName + " de " + start + " à " + end
     );
     if (start > end) {
-      throw "Le début ne peut pas être plus grand que la fin";
+      throw new Error("Le début ne peut pas être plus grand que la fin");
     }
     const volumeDownloadLocations: Array<Array<string>> = [];
     for (let i = start; i <= end; i++) {
@@ -630,14 +632,14 @@ class Downloader {
     });
 
     if (lastChapterLink === undefined || lastChapterLink === null) {
-      throw (
+      throw new Error(
         "japdl n'a pas pu récupérer les infos de " +
         mangaName +
         ", ce manga ne se trouve pas à ce nom sur japscan"
       );
     }
     if (volumes === undefined) {
-      throw (
+      throw new Error(
         "japdl n'a pas pu trouver la liste des chapitres sur la page du manga " +
         mangaName
       );
@@ -670,12 +672,12 @@ class Downloader {
     const numberOfVolumes = (await this.fetchStats(mangaName, page)).volumes;
 
     if (volumeNumber > numberOfVolumes || volumeNumber <= 0) {
-      throw `Le numéro de volume (${volumeNumber}) ne peut pas être plus grand que le nombre actuel de volumes (${numberOfVolumes}) ou moins de 1`;
+      throw new Error(`Le numéro de volume (${volumeNumber}) ne peut pas être plus grand que le nombre actuel de volumes (${numberOfVolumes}) ou moins de 1`);
     }
 
     const chapters = await chapterList?.$$(".collapse");
     if (chapters === undefined) {
-      throw (
+      throw new Error(
         "Le programme n'a pas pu accéder au contenu du volume " + volumeNumber
       );
     }
@@ -697,7 +699,7 @@ class Downloader {
       await page.close();
       return volumeLinks.reverse();
     } catch (e) {
-      throw `japdl n'a pas pu récupérer les chapitres du volume ${volumeNumber} du manga ${mangaName}, qui a une longueur de chapitre de ${chapters.length}, erreur ${e}`;
+      throw new Error(`japdl n'a pas pu récupérer les chapitres du volume ${volumeNumber} du manga ${mangaName}, qui a une longueur de chapitre de ${chapters.length}, erreur ${e}`);
     }
   }
 
