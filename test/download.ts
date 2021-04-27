@@ -15,20 +15,22 @@ describe("Downloading one-piece chapter 999", function () {
   it("download one piece chapter 999", function () {
     this.timeout(1000 * 60 * 5); // 5 minutes
     return new Promise((resolve, reject) => {
-            downloader.downloadChapter("one-piece", 999).then(() => resolve(undefined)).catch((error) => reject(error));
-    })
+      downloader
+        .downloadChapter("one-piece", 999)
+        .then(() => resolve(undefined))
+        .catch((error) => reject(error));
+    });
   });
-  it("number of open chrome pages must be 1, the about blank page", async function () {
+  it("number of open chrome pages must be all about:blank", async function () {
     return new Promise(function (resolve, reject) {
       downloader.browser.pages().then((pages) => {
-        if (pages.length !== 1) {
-            const pagesUrl: string[] = [];
-            pages.forEach((page) => pagesUrl.push(page.url()));
-          reject(
-            "The number of pages after download is " +
-              pages.length +
-              " instead of 1, pages url are: " + pagesUrl.join(' | ')
-          );
+        const pagesUrl: string[] = [];
+        pages.forEach((page) => pagesUrl.push(page.url()));
+        const pagesThatAreNotBlank = pagesUrl.filter(
+          (url) => url !== "about:blank"
+        );
+        if (pagesThatAreNotBlank.length) {
+          reject("Some pages are not closed:" + pagesThatAreNotBlank);
         } else {
           resolve();
         }
