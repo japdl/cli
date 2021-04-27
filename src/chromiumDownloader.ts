@@ -5,8 +5,9 @@ import utils from "./utils";
 (async () => {
     const revision = utils.path.getChromeInfos().revision;
     const platforms = [
-        'linux'
-    //'win64', 'mac'
+        //'linux'
+        'win64'
+        //,'mac'
     ];
     for(const platform of platforms){
         const fetcher = await puppeteer.createBrowserFetcher({platform: platform, path: path.resolve(".local-chromium/")})
