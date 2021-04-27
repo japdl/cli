@@ -64,7 +64,7 @@ class Downloader {
               "Une erreur s'est produite, vérifiez que vous avez bien une connexion internet"
             );
           } else if (e.toString().includes("EACCES")) {
-              reject("L'executable chrome à l'endroit " + this.chromePath + " ne peut pas être lancé: japdl n'a pas les permissions. Cela peut être dû à un manque de permission sur linux (fix avec chmod)")
+              reject("L'executable chrome à l'endroit " + this.chromePath + " ne peut pas être lancé: japdl n'a pas les permissions. Cela est dû à un manque de permission. Sur linux, la solution peut être: 'chmod 777 " + this.chromePath + "'");
           }else if (
             e.toString().includes("Failed to launch the browser process!")
           ) {
