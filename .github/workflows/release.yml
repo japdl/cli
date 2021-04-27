@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -20,8 +20,8 @@ jobs:
       - name: copy file
         uses: canastro/copy-file-action@master
         with:
-          source: "node_modules/puppeteer/.local-chromium/**/chrome-win"
-          target: "build/puppeteer/"
+          source: "node_modules/puppeteer/.local-chromium/"
+          target: "build/"
           flags: "-r"
 
       - name: zip files

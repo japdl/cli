@@ -4,12 +4,11 @@ import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import AdblockerPlugin from "puppeteer-extra-plugin-adblocker";
 import utils from "./utils";
-
+import path from "path";
 import yargs from "yargs";
 
 puppeteer.use(StealthPlugin());
 puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
-
 /**
  * Japscan downloader class, usually used with an interface (that you can make)
  */
@@ -45,6 +44,8 @@ class Downloader {
     this.fast = flags.f;
     this.timeout = flags.t * 1000;
     this.outputDirectory = "manga";
+    const chromeInfos = utils.path.getChromeInfos();
+    this.chromePath = chromeInfos.path;
     this.onready = new Promise((resolve, reject) => {
       puppeteer
         .launch({
@@ -52,6 +53,7 @@ class Downloader {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           headless: headless,
+          executablePath: this.chromePath
         })
         .then((browser) => {
           this.browser = browser;

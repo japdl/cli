@@ -1,6 +1,7 @@
 import archiver from "archiver";
 import fs from "fs";
 import Interface from "./interface";
+import path from "path";
 
 /**
  * Zipper contains functions that helps zipping
@@ -32,7 +33,7 @@ const zipper = {
 /**
  * Contains path functions to help manage paths and files
  */
-const path = {
+const upath = {
     async getCommands(): Promise<Record<string, {
         description: string;
         usage: string;
@@ -177,6 +178,22 @@ const path = {
             this.mkdirIfDoesntExist(path);
         });
     },
+    getChromeInfos(): {
+        revision: string,
+        path: string,
+    } {
+        const revision = "869685";
+        let chromePath;
+        if(process.platform === 'win32'){
+            chromePath = path.join('.local-chromium', `win64-${revision}`, "chrome-win", "chrome.exe");
+        } else {
+            chromePath = path.join('.local-chromium', `linux-${revision}`, "chrome-linux", "chrome");
+        }
+        return {
+            revision: revision,
+            path: path.resolve(chromePath)
+        }
+    }
 }
 
 /**
@@ -206,6 +223,6 @@ Element.prototype.attachShadow = function () {
 
 export default {
     zipper: zipper,
-    path: path,
+    path: upath,
     inject: inject
 }
