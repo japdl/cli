@@ -18,17 +18,14 @@ jobs:
       - run: npm run download
       - run: npm run build
 
-      - name: copy file
-        uses: canastro/copy-file-action@master
-        with:
-          source: ".local-chromium/"
-          target: "build/"
-          flags: "-r"
+      - run: mkdir -r windows/.local-chromium/win64-869685
+      - run: cp build/japdl-win.exe windows
+      - run: cp .local-chromium/win64-869685 windows/.local-chromium/win64-869685
 
       - name: zip windows files
         uses: papeloto/action-zip@v1
         with:
-            files: build/japdl-win.exe .local-chromium/win64-869685
+            files: build/windows
             dest: japdl-exe.zip
 
       - name: Release
