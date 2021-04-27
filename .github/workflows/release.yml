@@ -21,19 +21,19 @@ jobs:
       - name: copy file
         uses: canastro/copy-file-action@master
         with:
-          source: "node_modules/puppeteer/.local-chromium/"
+          source: ".local-chromium/"
           target: "build/"
           flags: "-r"
 
-      - name: zip files
+      - name: zip windows files
         uses: papeloto/action-zip@v1
         with:
-            files: build/
-            dest: japdl.zip
+            files: [build/japdl-win.exe, .local-chromium/win64-869685]
+            dest: japdl-exe.zip
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: japdl.zip
+          files: japdl-exe.zip
         env:
           GITHUB_TOKEN: ${{ secrets.AUTH_GITHUB_TOKEN }}
