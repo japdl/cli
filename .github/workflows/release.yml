@@ -42,7 +42,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-          japdl-windows.zip
-          japdl-linux.zip
+            japdl-windows.zip
+            japdl-linux.zip
         env:
           GITHUB_TOKEN: ${{ secrets.AUTH_GITHUB_TOKEN }}
