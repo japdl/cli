@@ -20,7 +20,7 @@ jobs:
       - name: copy file
         uses: canastro/copy-file-action@master
         with:
-          source: "node_modules/puppeteer/.local-chromium"
+          source: "node_modules/puppeteer/.local-chromium/**/chrome-win"
           target: "build/puppeteer/"
           flags: "-r"
 
