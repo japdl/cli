@@ -18,6 +18,12 @@ jobs:
       - run: npm test
       - run: npm run build
 
+      - name: copy file
+        uses: canastro/copy-file-action@master
+        with:
+          source: "node_modules/puppeteer/.local-chromium"
+          target: "build/puppeteer/"
+
       - name: zip files
         uses: papeloto/action-zip@v1
         with:
