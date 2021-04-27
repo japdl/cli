@@ -29,9 +29,8 @@ jobs:
             dest: japdl-windows.zip
 
 # windows zip without chrome
-      - id: zip windows files (no chrome)
-        run: "cp config_windows.txt config.txt"
-        uses: papeloto/action-zip@v1
+      - run: "cp config_windows.txt config.txt"
+      - uses: papeloto/action-zip@v1
         with:
             files: build/japdl-win.exe config.txt
             dest: japdl-windows-no-chrome.zip
@@ -50,9 +49,8 @@ jobs:
             dest: japdl-linux.zip
 
 # linux zip without chrome
-      - id: zip linux files (no chrome)
-        run: "cp config_linux.txt config.txt"
-        uses: papeloto/action-zip@v1
+      - run: "cp config_linux.txt config.txt"
+      - uses: papeloto/action-zip@v1
         with:
             files: build/japl-linux
             dest: japdl-linux-no-chrome.zip
