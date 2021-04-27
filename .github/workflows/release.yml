@@ -9,15 +9,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install and compile
-        - uses: actions/checkout@v2
-        - uses: actions/setup-node@v1
-          with:
-            node-version: 14
-        - run: npm ci
-        - run: npm run tsc
-        - run: npm test
-        - run: npm run build
+      - name: build everything
+        uses: actions/checkout@v2
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+        run: npm ci
+        run: npm run tsc
+        run: npm test
+        run: npm run build
+
       - name: zip files
         with:
             files: build/
