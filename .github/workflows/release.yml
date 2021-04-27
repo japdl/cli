@@ -20,7 +20,7 @@ jobs:
 
       - run: mkdir -p windows/.local-chromium/win64-869685
       - run: cp build/japdl-win.exe windows
-      - run: cp -r .local-chromium/win64-869685 windows/.local-chromium/win64-869685
+      - run: cp -r .local-chromium/win64-869685 windows/.local-chromium/
 
       - name: zip windows files
         uses: papeloto/action-zip@v1
