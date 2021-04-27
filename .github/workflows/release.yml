@@ -31,7 +31,7 @@ jobs:
 
 # windows zip without chrome
       - name: zip windows files (no chrome)
-      - run: "cp config_windows.txt config.txt"
+        run: "cp config_windows.txt config.txt"
         uses: papeloto/action-zip@v1
         with:
             files: build/japdl-win.exe config.txt
@@ -52,7 +52,7 @@ jobs:
 
 # linux zip without chrome
       - name: zip linux files (no chrome)
-      - run: "cp config_linux.txt config.txt"
+        run: "cp config_linux.txt config.txt"
         uses: papeloto/action-zip@v1
         with:
             files: build/japl-linux
