@@ -9,11 +9,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Install and compile
+        - uses: actions/checkout@v2
+        - uses: actions/setup-node@v1
+          with:
+            node-version: 14
+        - run: npm ci
+        - run: npm run tsc
+        - run: npm test
+        - run: npm run build
+      - name: zip files
+        with:
+            files: build/
+            dest: japdl.zip
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: README.md
+          files: japdl.zip
         env:
           GITHUB_TOKEN: ${{ secrets.AUTH_GITHUB_TOKEN }}
