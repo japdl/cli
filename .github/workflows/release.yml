@@ -17,19 +17,20 @@ jobs:
       - run: npm run tsc
       - run: npm run download
       - run: npm run build
-
 # windows zip with chrome
       - run: mkdir -p windows/.local-chromium/win64-869685
       - run: cp build/japdl-win.exe windows
       - run: cp -r .local-chromium/win64-869685 windows/.local-chromium/
 
-      - uses: papeloto/action-zip@v1
+      - name: zip windows files (chrome)
+        uses: papeloto/action-zip@v1
         with:
             files: windows
             dest: japdl-windows.zip
 
 # windows zip without chrome
-      - run: "cp config_windows.txt config.txt"
+      - id: zip windows files (no chrome)
+        run: "cp config_windows.txt config.txt"
         uses: papeloto/action-zip@v1
         with:
             files: build/japdl-win.exe config.txt
@@ -42,13 +43,15 @@ jobs:
       - run: cp -r .local-chromium/linux-869685 linux/.local-chromium/
       - run: chmod 777 linux/.local-chromium/linux-869685/chrome-linux/chrome
 
-      - uses: papeloto/action-zip@v1
+      - name: zip linux files (chrome)
+        uses: papeloto/action-zip@v1
         with:
             files: linux
             dest: japdl-linux.zip
 
 # linux zip without chrome
-      - run: "cp config_linux.txt config.txt"
+      - id: zip linux files (no chrome)
+        run: "cp config_linux.txt config.txt"
         uses: papeloto/action-zip@v1
         with:
             files: build/japl-linux
