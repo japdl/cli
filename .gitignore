@@ -5,6 +5,7 @@
 build/
 manga/
 js/
+.local-chromium
 
 # Logs
 logs

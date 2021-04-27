@@ -4,7 +4,6 @@ import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import AdblockerPlugin from "puppeteer-extra-plugin-adblocker";
 import utils from "./utils";
-import path from "path";
 import yargs from "yargs";
 
 puppeteer.use(StealthPlugin());
