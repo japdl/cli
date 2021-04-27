@@ -69,7 +69,7 @@ class Downloader {
             reject(
               "Le chemin de chrome donné (" +
                 this.chromePath +
-                ") n'est pas correct"
+                ") n'est pas correct: " + e
             );
           } else if (e.toString().includes("Could not find expected browser")){
               reject("Chromium n'a pas été trouvé à côté de l'executable");
