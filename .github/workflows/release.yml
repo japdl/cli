@@ -13,5 +13,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Release
         uses: softprops/action-gh-release@v1
+        with:
+          files: README.md
         env:
           GITHUB_TOKEN: ${{ secrets.AUTH_GITHUB_TOKEN }}
