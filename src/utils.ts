@@ -148,7 +148,6 @@ const upath = {
                 return path;
             } else {
                 console.log(`Le chemin ${path} donné dans le fichier config n'est pas un chemin valide`);
-
             }
         }
         let possiblePaths: string[] = [];
