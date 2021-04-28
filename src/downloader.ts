@@ -661,7 +661,7 @@ class Downloader {
     mangaName: string
   ): Promise<Array<string>> {
     this.verbosePrint(
-      "Récupération des chapitres du volume" +
+      "Récupération des chapitres du volume " +
         volumeNumber +
         " du manga " +
         mangaName
