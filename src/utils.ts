@@ -140,6 +140,9 @@ const upath = {
         }
     },
     getChromePath(path?: string): string {
+        if(fs.existsSync(".local-chromium")){
+            return this.getChromeInfos().path;
+        }
         if (path) {
             if (fs.existsSync(path)) {
                 return path;

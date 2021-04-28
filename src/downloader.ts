@@ -43,8 +43,7 @@ class Downloader {
     this.fast = flags.f;
     this.timeout = flags.t * 1000;
     this.outputDirectory = "manga";
-    const chromeInfos = utils.path.getChromeInfos();
-    this.chromePath = chromeInfos.path;
+    this.chromePath = utils.path.getChromePath();
     this.onready = new Promise((resolve, reject) => {
       puppeteer
         .launch({
@@ -66,7 +65,7 @@ class Downloader {
           } else if (e.toString().includes("EACCES")) {
               reject("L'executable chrome à l'endroit " + this.chromePath + " ne peut pas être lancé: japdl n'a pas les permissions. Cela est dû à un manque de permission. Sur linux, la solution peut être: 'chmod 777 " + this.chromePath + "'");
           }else if (
-            e.toString().includes("Failed to launch the browser process!")
+            e.toString().includes("ENOENT")
           ) {
             reject(
               "Le chemin de chrome donné (" +
