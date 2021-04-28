@@ -30,8 +30,7 @@ class Downloader {
       .option("v", { alias: "verbose", boolean: true, default: false })
       .option("h", { alias: "headless", boolean: true, default: false })
       .option("f", { alias: "fast", boolean: true, default: false })
-      .option("t", { alias: "timeout", number: true, default: 60 })
-      .argv;
+      .option("t", { alias: "timeout", number: true, default: 60 }).argv;
 
     if (flags.f) {
       console.log(
@@ -52,7 +51,7 @@ class Downloader {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           headless: headless,
-          executablePath: this.chromePath
+          executablePath: this.chromePath,
         })
         .then((browser) => {
           this.browser = browser;
@@ -64,17 +63,22 @@ class Downloader {
               "Une erreur s'est produite, vérifiez que vous avez bien une connexion internet"
             );
           } else if (e.toString().includes("EACCES")) {
-              reject("L'executable chrome à l'endroit " + this.chromePath + " ne peut pas être lancé: japdl n'a pas les permissions. Cela est dû à un manque de permission. Sur linux, la solution peut être: 'chmod 777 " + this.chromePath + "'");
-          }else if (
-            e.toString().includes("ENOENT")
-          ) {
+            reject(
+              "L'executable chrome à l'endroit " +
+                this.chromePath +
+                " ne peut pas être lancé: japdl n'a pas les permissions. Cela est dû à un manque de permission. Sur linux, la solution peut être: 'chmod 777 " +
+                this.chromePath +
+                "'"
+            );
+          } else if (e.toString().includes("ENOENT")) {
             reject(
               "Le chemin de chrome donné (" +
                 this.chromePath +
-                ") n'est pas correct: " + e
+                ") n'est pas correct: " +
+                e
             );
-          } else if (e.toString().includes("Could not find expected browser")){
-              reject("Chromium n'a pas été trouvé à côté de l'executable");
+          } else if (e.toString().includes("Could not find expected browser")) {
+            reject("Chromium n'a pas été trouvé à côté de l'executable");
           }
           reject("Une erreur s'est produite lors de l'initialisation: " + e);
         });
@@ -89,9 +93,9 @@ class Downloader {
   async goToExistingPage(link: string): Promise<Page> {
     const page = await this.browser.newPage();
     try {
-    await page.goto(link, {timeout: this.timeout});
-    } catch(e) {
-        return await this.goToExistingPage(link);
+      await page.goto(link, { timeout: this.timeout });
+    } catch (e) {
+      return await this.goToExistingPage(link);
     }
     if (await this.isJapscan404(page)) {
       throw new Error("La page " + link + " n'existe pas (404)");
@@ -121,10 +125,12 @@ class Downloader {
    * @param link link to evaluate
    * @returns manga attributes found from link
    */
-  getAttributesFromLink(link: string): {
-      manga: string,
-      chapter: string,
-      page: string
+  getAttributesFromLink(
+    link: string
+  ): {
+    manga: string;
+    chapter: string;
+    page: string;
   } {
     if (link[link.length - 1] != "/") {
       link += "/";
@@ -146,11 +152,15 @@ class Downloader {
    * @param param can be a link or manga attributes
    * @returns file name for the page
    */
-  getFilenameFrom(param: string | {
-      manga: string,
-      chapter: string,
-      page: string
-  }): string {
+  getFilenameFrom(
+    param:
+      | string
+      | {
+          manga: string;
+          chapter: string;
+          page: string;
+        }
+  ): string {
     if (typeof param === "string") {
       return this.getFilenameFrom(this.getAttributesFromLink(param));
     } else {
@@ -163,11 +173,15 @@ class Downloader {
    * @param param can be a link or manga attributes
    * @returns path to manga without filename
    */
-  getPathFrom(param: string | {
-      manga: string,
-      chapter: string,
-      page: string
-  }): string {
+  getPathFrom(
+    param:
+      | string
+      | {
+          manga: string;
+          chapter: string;
+          page: string;
+        }
+  ): string {
     if (typeof param === "string") {
       return this.getPathFrom(this.getAttributesFromLink(param));
     } else {
@@ -253,32 +267,7 @@ class Downloader {
   ): Promise<string> {
     this.verbosePrint("Téléchargement du chapitre depuis le lien " + link);
     const startAttributes = this.getAttributesFromLink(link);
-    const startPage = await this.goToExistingPage(link);
-    const chapterSelectSelector =
-      "div.div-select:nth-child(2) > .ss-main > .ss-content > .ss-list";
-    try {
-      this.verbosePrint("Attente du script de page...");
-      await startPage.waitForSelector(chapterSelectSelector, {
-        timeout: this.timeout,
-      });
-      this.verbosePrint("Attente terminée");
-    } catch (e) {
-      await startPage.close();
-      return await this.downloadChapterFromLink(link, compression);
-    }
-    const chapterSelect = await startPage.$(chapterSelectSelector);
-
-    if (chapterSelect === null) {
-      throw new Error(
-        "Pas pu récup select scroll, Japdl n'a pas pu déterminer le nombre de pages dans le chapitre du lien " +
-        link
-      );
-    }
-    const numberOfPages = await chapterSelect.evaluate(
-      (el) => el.childElementCount
-    );
-    console.log("Nombre de page(s): " + numberOfPages);
-    await startPage.close();
+    const numberOfPages = await this.fetchNumberOfPagesInChapter(link);
 
     const couldNotDownload: string[] = [];
     for (let i = 1; i <= numberOfPages; i++) {
@@ -612,10 +601,13 @@ class Downloader {
    * @param _page page you already have opened to prevent waiting for page initialisation
    * @returns manga stats
    */
-  async fetchStats(mangaName: string, _page?: Page): Promise<{
-      volumes: number,
-      chapters: number,
-      name: string
+  async fetchStats(
+    mangaName: string,
+    _page?: Page
+  ): Promise<{
+    volumes: number;
+    chapters: number;
+    name: string;
   }> {
     this.verbosePrint("Récupération des infos du manga " + mangaName);
     const link = this.WEBSITE + "/manga/" + mangaName + "/";
@@ -637,14 +629,14 @@ class Downloader {
     if (lastChapterLink === undefined || lastChapterLink === null) {
       throw new Error(
         "japdl n'a pas pu récupérer les infos de " +
-        mangaName +
-        ", ce manga ne se trouve pas à ce nom sur japscan"
+          mangaName +
+          ", ce manga ne se trouve pas à ce nom sur japscan"
       );
     }
     if (volumes === undefined) {
       throw new Error(
         "japdl n'a pas pu trouver la liste des chapitres sur la page du manga " +
-        mangaName
+          mangaName
       );
     }
     if (!_page) {
@@ -675,7 +667,9 @@ class Downloader {
     const numberOfVolumes = (await this.fetchStats(mangaName, page)).volumes;
 
     if (volumeNumber > numberOfVolumes || volumeNumber <= 0) {
-      throw new Error(`Le numéro de volume (${volumeNumber}) ne peut pas être plus grand que le nombre actuel de volumes (${numberOfVolumes}) ou moins de 1`);
+      throw new Error(
+        `Le numéro de volume (${volumeNumber}) ne peut pas être plus grand que le nombre actuel de volumes (${numberOfVolumes}) ou moins de 1`
+      );
     }
 
     const chapters = await chapterList?.$$(".collapse");
@@ -702,8 +696,43 @@ class Downloader {
       await page.close();
       return volumeLinks.reverse();
     } catch (e) {
-      throw new Error(`japdl n'a pas pu récupérer les chapitres du volume ${volumeNumber} du manga ${mangaName}, qui a une longueur de chapitre de ${chapters.length}, erreur ${e}`);
+      throw new Error(
+        `japdl n'a pas pu récupérer les chapitres du volume ${volumeNumber} du manga ${mangaName}, qui a une longueur de chapitre de ${chapters.length}, erreur ${e}`
+      );
     }
+  }
+
+  async fetchNumberOfPagesInChapter(link: string): Promise<number> {
+    this.verbosePrint(
+      "Recupération du nombre de pages pour le chapitre " + link
+    );
+    const startPage = await this.goToExistingPage(link);
+    const chapterSelectSelector =
+      "div.div-select:nth-child(2) > .ss-main > .ss-content > .ss-list";
+    try {
+      this.verbosePrint("Attente du script de page...");
+      await startPage.waitForSelector(chapterSelectSelector, {
+        timeout: this.timeout,
+      });
+      this.verbosePrint("Attente terminée");
+    } catch (e) {
+      await startPage.close();
+      return await this.fetchNumberOfPagesInChapter(link);
+    }
+    const chapterSelect = await startPage.$(chapterSelectSelector);
+
+    if (chapterSelect === null) {
+      throw new Error(
+        "Pas pu récup select scroll, Japdl n'a pas pu déterminer le nombre de pages dans le chapitre du lien " +
+          link
+      );
+    }
+    const numberOfPages = await chapterSelect.evaluate(
+      (el) => el.childElementCount
+    );
+    this.verbosePrint("Nombre de page(s): " + numberOfPages);
+    await startPage.close();
+    return numberOfPages;
   }
 
   verbosePrint(msg: string): void {

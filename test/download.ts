@@ -123,6 +123,22 @@ describe("Fetch manga stats tests", function () {
         })
       })
   });
+  it("Fetchs one-piece chapter 999 pages", function() {
+      const supposedResult = 15;
+        return new Promise((resolve, reject) => {
+            downloader.fetchNumberOfPagesInChapter("https://www.japscan.se/lecture-en-ligne/one-piece/1000/").then((numberOfPages) => {
+            if(supposedResult !== numberOfPages){
+                reject(
+                    "Les résultats obtenus ne sont pas les résultats attendus. Attendus: " +
+                      supposedResult +
+                      "\nObtenus: " +
+                      numberOfPages
+                  );
+            }
+            resolve(undefined);
+            });
+        })
+  });
 });
 describe("japscan 404 tests", function(){
     it("Should throw because page is 404", function() {
