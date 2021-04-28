@@ -650,6 +650,12 @@ class Downloader {
     };
   }
 
+  /**
+   *
+   * @param volumeNumber volume number
+   * @param  mangaName manga name
+   * @returns array of link to the chapters in volume volumeNumber
+   */
   async fetchVolumeChapters(
     volumeNumber: number,
     mangaName: string
@@ -701,7 +707,11 @@ class Downloader {
       );
     }
   }
-
+  /**
+   *
+   * @param link to fetch from
+   * @returns number of pages in chapter
+   */
   async fetchNumberOfPagesInChapter(link: string): Promise<number> {
     this.verbosePrint(
       "Recupération du nombre de pages pour le chapitre " + link
