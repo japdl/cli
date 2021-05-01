@@ -78,10 +78,10 @@ class Interface extends Downloader {
             if (command.argsNeeded) {
                 console.log("\texemple" + ((command.example.length > 1) ? "s" : "") + ": \n\t\t- " + command.example.join('\n\t\t- '));
             }
-            console.log("\n /!\\ | Les noms de mangas ne peuvent pas contenir d'espace ni de caractères spéciaux.");
-            console.log("       Pour écrire One Piece par exemple, il faudra l'écrire de la manière suivante: 'one-piece'. Ce nom est décidé par japscan, pas par japdl.");
-            console.log(`       Si vous n'êtes pas sûr, allez sur japscan à la page du manga. Le nom du manga sera dans le lien, après '${this.WEBSITE}/manga/'`);
         });
+        console.log("\n /!\\ | Les noms de mangas ne peuvent pas contenir d'espace ni de caractères spéciaux.");
+        console.log("       Pour écrire One Piece par exemple, il faudra l'écrire de la manière suivante: 'one-piece'. Ce nom est décidé par japscan, pas par japdl.");
+        console.log(`       Si vous n'êtes pas sûr, allez sur japscan à la page du manga. Le nom du manga sera dans le lien, après '${this.WEBSITE}/manga/'`);
     }
     /**
      * returns a resolved promise when a line is entered in the terminal with the line as the return string

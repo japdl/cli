@@ -1,4 +1,4 @@
-import Interface from "./interface";
+import Interface from "./src/interface";
 
 const inter = new Interface();
 inter.onready.then(() => {

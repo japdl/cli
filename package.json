@@ -2,9 +2,9 @@
   "name": "japdl",
   "version": "1.0.0",
   "description": "",
-  "main": "js/src/index.js",
+  "main": "js/index.js",
   "scripts": {
-    "start": "node .",
+    "start": "npm run tsc && node .",
     "build": "pkg .",
     "test": "mocha -r ts-node/register 'test/**/*.ts' --exit --verbose",
     "tsc": "tsc",
@@ -23,7 +23,7 @@
       "js/**/*.js"
     ]
   },
-  "bin": "js/src/index.js",
+  "bin": "js/index.js",
   "keywords": [],
   "author": "",
   "license": "ISC",
