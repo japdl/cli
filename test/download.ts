@@ -1,4 +1,4 @@
-import Downloader from "../src/downloader";
+import Downloader from "../src/Downloader";
 import fs from "fs";
 import path from "path";
 

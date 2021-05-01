@@ -1,6 +1,6 @@
 import archiver from "archiver";
 import fs from "fs";
-import Interface from "./interface";
+import CLIInterface from "./CLIInterface";
 import path from "path";
 
 /**
@@ -40,7 +40,7 @@ const upath = {
         aliases: string[];
         example: string[];
         argsNeeded: number;
-        execute(inter: Interface, args: string[]): Promise<void>;
+        execute(inter: CLIInterface, args: string[]): Promise<void>;
     }>> {
         const files = this.getCommandsKeys();
         const commands: Record<string, {
@@ -49,7 +49,7 @@ const upath = {
             aliases: string[];
             example: string[];
             argsNeeded: number;
-            execute(inter: Interface, args: string[]): Promise<void>;
+            execute(inter: CLIInterface, args: string[]): Promise<void>;
         }> = {};
         for (const file of files) {
             const imported = await import("../commands/" + file).catch((e) => console.log(e));

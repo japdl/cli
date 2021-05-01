@@ -1,10 +1,10 @@
 import readline from "readline";
-import Downloader from "./downloader";
+import Downloader from "./Downloader";
 import utils from "./utils";
 /**
  * Interface implementation for downloader
  */
-class Interface extends Downloader {
+class CLIInterface extends Downloader {
     rl: readline.Interface;
     downloader!: Downloader;
     commands: Promise<Record<string, {
@@ -13,7 +13,7 @@ class Interface extends Downloader {
         aliases: string[];
         example: string[];
         argsNeeded: number;
-        execute(inter: Interface, args: string[]): Promise<void>;
+        execute(inter: CLIInterface, args: string[]): Promise<void>;
     }>>;
     commandsKeys: string[];
 
@@ -75,13 +75,14 @@ class Interface extends Downloader {
             const command = commands[key];
             console.log("- " + key + ": " + command.description);
             console.log("\tusage: " + command.usage);
+            console.log("\talias: " + command.aliases.join(' '));
             if (command.argsNeeded) {
                 console.log("\texemple" + ((command.example.length > 1) ? "s" : "") + ": \n\t\t- " + command.example.join('\n\t\t- '));
             }
         });
         console.log("\n /!\\ | Les noms de mangas ne peuvent pas contenir d'espace ni de caractères spéciaux.");
         console.log("       Pour écrire One Piece par exemple, il faudra l'écrire de la manière suivante: 'one-piece'. Ce nom est décidé par japscan, pas par japdl.");
-        console.log(`       Si vous n'êtes pas sûr, allez sur japscan à la page du manga. Le nom du manga sera dans le lien, après '${this.WEBSITE}/manga/'`);
+        console.log(`       Si vous n'êtes pas sûr, allez sur ${this.WEBSITE} à la page du manga. Le nom du manga sera dans le lien, après '${this.WEBSITE}/manga/'`);
     }
     /**
      * returns a resolved promise when a line is entered in the terminal with the line as the return string
@@ -145,8 +146,8 @@ class Interface extends Downloader {
         this.dynamicDisplayHelp().then(() => {
             this.printSeparator();
             this.handleInput();
-        });   
+        });
     }
 }
 
-export default Interface;
+export default CLIInterface;

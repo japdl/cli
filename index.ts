@@ -1,6 +1,6 @@
-import Interface from "./src/interface";
+//import GUIInterface from "./src/GUIInterface"; const inter = new GUIInterface();
+import CLIInterface from "./src/CLIInterface"; const inter = new CLIInterface();
 
-const inter = new Interface();
 inter.onready.then(() => {
     inter.start();
 }).catch((error) => {

@@ -1,4 +1,4 @@
-import Downloader from "./downloader";
+import Downloader from "./Downloader";
 
 const downloader = new Downloader();
 downloader.onready.then(() => {

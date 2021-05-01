@@ -1,4 +1,4 @@
-import Interface from "../src/interface";
+import CLIInterface from "../src/CLIInterface";
 import utils from "../src/utils";
 
 module.exports = {
@@ -7,7 +7,7 @@ module.exports = {
     example: ["telecharge one-piece volume 99 s", "telecharge one-piece volume 99", "telecharge chainsaw-man chapitre 50", "telecharge fire-punch volume 1-8", "telecharge demon-slayer chapitre 1-50"],
     aliases: ["t"],
     argsNeeded: 3,
-    async execute(inter: Interface, args: string[]): Promise<void> {
+    async execute(inter: CLIInterface, args: string[]): Promise<void> {
         const mangaName = args[0];
         const type = args[1];
         if (type !== "volume" && type !== "chapitre") {

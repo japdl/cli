@@ -1,4 +1,4 @@
-import Interface from "../src/interface";
+import CLIInterface from "../src/CLIInterface";
 import utils from "../src/utils";
 
 module.exports = {
@@ -7,7 +7,7 @@ module.exports = {
     aliases: ["z", "cbr"],
     example: ["zip one-piece volume 99", "zip chainsaw-man chapitre 50"],
     argsNeeded: 3,
-    async execute(inter: Interface, args: string[]): Promise<void> {
+    async execute(inter: CLIInterface, args: string[]): Promise<void> {
         const mangaName = args[0];
         const type = args[1];
         if (type !== "volume" && type !== "chapitre") {
