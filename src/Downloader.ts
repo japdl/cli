@@ -4,6 +4,7 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import AdblockerPlugin from "puppeteer-extra-plugin-adblocker";
 import utils from "./utils";
 import yargs from "yargs";
+import path from "path";
 
 puppeteer.use(StealthPlugin());
 puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
@@ -338,15 +339,15 @@ class Downloader {
 
     const attributes = this.getAttributesFromLink(link);
 
-    let path =
+    let savePath =
       this.outputDirectory +
       "/" +
       attributes.manga +
       "/" +
       attributes.chapter +
       "/";
-    utils.path.createPath(path);
-    path += this.getFilenameFrom(attributes);
+    utils.path.createPath(savePath);
+    savePath += this.getFilenameFrom(attributes);
     const canvasElement = await page.$(popupCanvasSelector);
     let dimensions = await canvasElement?.evaluate((el) => {
       const width = el.getAttribute("width");
@@ -378,7 +379,7 @@ class Downloader {
     await canvasElement
       ?.screenshot({
         omitBackground: true,
-        path: path,
+        path: savePath,
         type: "jpeg",
         quality: 100,
       })
@@ -390,7 +391,7 @@ class Downloader {
         " page " +
         attributes.page +
         " a été téléchargé à l'endroit: " +
-        path
+        path.resolve(savePath)
     );
     page.close();
     return true;

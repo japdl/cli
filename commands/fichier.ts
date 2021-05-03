@@ -13,7 +13,7 @@ module.exports = {
             const start = new Date();
             console.log("Début de la commande: " + line);
             await inter.readCommands(line);
-            console.log("Fin de la commande: " + line + ", durée: " +( (+new Date().getTime() - +start.getTime())/1000) + " secondes");
+            console.log(`Fin de la commande: "${line}", durée: : ${(+new Date().getTime() - +start.getTime())/1000} secondes`);
         }
     }
 }
