@@ -46,9 +46,6 @@ class Downloader {
     this.onready = new Promise((resolve, reject) => {
       puppeteer
         .launch({
-          // this launch option is not in @types/puppeteer so I must do that
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
           headless: headless,
           executablePath: this.chromePath,
         })

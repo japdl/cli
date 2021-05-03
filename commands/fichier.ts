@@ -9,9 +9,11 @@ module.exports = {
     argsNeeded: 1,
     async execute(inter: CLIInterface, args: string[]): Promise<void> {
         const fileContent = fs.readFileSync(args[0], 'utf-8');
-        fileContent.split('\n').forEach(async (line) => {
-            const goodLine = line.trim();
-            await inter.readCommands(goodLine);
-        });
+        for(const line of fileContent.split('\n').map((line) => line.trim())){
+            const start = new Date();
+            console.log("Début de la commande: " + line);
+            await inter.readCommands(line);
+            console.log("Fin de la commande: " + line + ", durée: " +( (+new Date().getTime() - +start.getTime())/1000) + " secondes");
+        }
     }
 }
