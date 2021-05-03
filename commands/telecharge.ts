@@ -22,7 +22,7 @@ module.exports = {
             const split = args[2].split('-');
             range = { start: parseInt(split[0]), end: parseInt(split[1]) };
         } else {
-            number = parseInt(args[2]);
+            number = parseFloat(args[2]);
             if (isNaN(number)) {
                 console.log("le numéro de" + type + "n'a pas pu être lu");
                 return;
