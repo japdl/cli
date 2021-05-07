@@ -13,6 +13,7 @@
     "test": "npm run tsc && mocha js/test/download.js --exit",
     "tsc": "tsc",
     "download": "npm run tsc && node js/src/utils/chromiumDownloader.js",
+    "downloadtest": "npm run tsc && node js/src/utils/chromiumDownloader.js --testing",
     "tester": "npm run tsc && node js/src/tester.js"
   },
   "pkg": {
