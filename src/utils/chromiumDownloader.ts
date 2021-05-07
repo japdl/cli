@@ -1,13 +1,12 @@
 import puppeteer from "puppeteer-extra";
 import path from "path";
-import utils from "./utils";
+import upath from "./upath";
 
 (async () => {
-    const revision = utils.path.getChromeInfos().revision;
+    const revision = upath.chrome.getChromeInfos().revision;
     const platforms = [
         'linux'
         ,'win64'
-        //,'mac'
     ];
     for(const platform of platforms){
         const fetcher = puppeteer.createBrowserFetcher({platform: platform, path: path.resolve(".local-chromium/")})
