@@ -17,11 +17,11 @@ module.exports = {
             console.log("- 'chapitre'");
             return;
         }
-        let range!: {start: number, end: number};
+        let range!: { start: number, end: number };
         let number!: number;
         if (args[2].includes('-')) {
             const split = args[2].split('-');
-            range = { start: parseFloat(split[0]), end: parseFloat(split[1])};
+            range = { start: parseFloat(split[0]), end: parseFloat(split[1]) };
         } else {
             number = parseFloat(args[2]);
             if (isNaN(number)) {
