@@ -4,6 +4,7 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import AdblockerPlugin from "puppeteer-extra-plugin-adblocker";
 import yargs from "yargs";
 import path from "path";
+import readline from "readline";
 
 // utils
 import { DownloaderOnChapter, DownloaderOnPage, MangaAttributes, MangaInfos } from "./utils/types";
@@ -52,7 +53,7 @@ class Downloader {
             const k = 20; // bar width
             const cur = Math.floor((currentPage / totalPages) * k);
             message = `${message} [${"=".repeat(cur)}${" ".repeat(k-cur)}]`
-            process.stdout.cursorTo(0);
+            readline.cursorTo(process.stdout, 0);
             process.stdout.write(message);
             // if at the end, new line
             if (currentPage === totalPages) process.stdout.write("\n");
