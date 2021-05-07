@@ -4,12 +4,12 @@
   "description": "",
   "main": "js/index.js",
   "scripts": {
-    "electron:start": "npm run tsc && electron .",
     "start": "npm run tsc && node .",
-    "build": "pkg .",
-    "test": "mocha -r ts-node/register 'test/**/*.ts' --exit --verbose",
+    "build": "npm run tsc && pkg .",
+    "test": "npm run tsc && mocha js/test/download.js --exit",
     "tsc": "tsc",
-    "download": "node js/src/chromiumDownloader.js"
+    "download": "npm run tsc && node js/src/utils/chromiumDownloader.js",
+    "tester": "npm run tsc && node js/src/tester.js"
   },
   "pkg": {
     "targets": [
@@ -48,6 +48,7 @@
     "@typescript-eslint/parser": "^4.22.0",
     "chai": "^4.3.4",
     "eslint": "^7.24.0",
+    "image-size": "^1.0.0",
     "mocha": "^8.3.2",
     "pkg": "^5.0.0",
     "ts-node": "^9.1.1",
