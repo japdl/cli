@@ -1,6 +1,7 @@
 import CLIInterface from "../src/CLIInterface";
-import upath from "../src/utils/upath";
+import fsplus from "../src/utils/fsplus";
 import zipper from "../src/utils/zipper";
+
 module.exports = {
     description: "Fabrique un cbr du volume|chapitre indiqué",
     usage: "zip <nom-du-manga> <volume|chapitre> <numéro>",
@@ -28,7 +29,7 @@ module.exports = {
                 toZip.push(inter.getPathFrom(chapter));
             });
         }
-        const isWorthZipping = upath.fsplus.tellIfDoesntExist(toZip);
+        const isWorthZipping = fsplus.tellIfDoesntExist(toZip);
         if (isWorthZipping) {
             zipper.zipDirectories(toZip, inter.getCbrFrom(mangaName, number, type));
         }

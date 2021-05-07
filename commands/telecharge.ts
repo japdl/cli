@@ -1,6 +1,6 @@
 import CLIInterface from "../src/CLIInterface";
 import path from "path";
-import upath from "../src/utils/upath";
+import manga from "../src/utils/manga";
 
 module.exports = {
     description: "Télécharge le volume|chapitre du manga indiqué, puis en fait un cbr. Le flag 's' supprime les dossiers d'images après le téléchargement, et 'f' force le téléchargement si les dossiers sont déjà trouvés sur le disque.",
@@ -37,26 +37,26 @@ module.exports = {
                 if (range) {
                     const downloadLocationsArray = await inter.downloadVolumes(mangaName, range.start, range.end);
                     downloadLocationsArray.forEach((downloadLocations) => {
-                        upath.manga.rmIfSFlag(args, downloadLocations);
+                        manga.rmIfSFlag(args, downloadLocations);
                     });
                 } else {
                     const downloadLocations = await inter.downloadVolume(mangaName, number);
-                    upath.manga.rmIfSFlag(args, downloadLocations);
+                    manga.rmIfSFlag(args, downloadLocations);
                 }
                 break;
             }
             case "chapitre":
                 if (range) {
                     const downloadLocations = await inter.downloadChapters(mangaName, range.start, range.end);
-                    upath.manga.rmIfSFlag(args, downloadLocations);
+                    manga.rmIfSFlag(args, downloadLocations);
                 } else {
-                    if (!args[3].toLowerCase().includes('f') && upath.manga.alreadyDownloaded(path.join(inter.outputDirectory, mangaName, number.toString()))) {
+                    if (!args[3].toLowerCase().includes('f') && manga.alreadyDownloaded(path.join(inter.outputDirectory, mangaName, number.toString()))) {
                         console.log("Le chapitre est déjà téléchargé, si vous voulez quand même le re-télécharger,");
                         console.log("Il faut spécifier l'argument 'f' après le numéro de chapitre.");
                         return;
                     }
                     const downloadLocation = await inter.downloadChapter(mangaName, number);
-                    upath.manga.rmIfSFlag(args, [downloadLocation]);
+                    manga.rmIfSFlag(args, [downloadLocation]);
                 }
                 break;
             default:

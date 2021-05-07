@@ -1,7 +1,6 @@
 import readline from "readline";
 import Downloader from "./Downloader";
-import upath from "./utils/upath";
-
+import commands from "./utils/commands";
 /**
  * Interface implementation for downloader
  */
@@ -25,8 +24,8 @@ class CLIInterface extends Downloader {
             output: process.stdout,
             terminal: false,
         });
-        this.commands = upath.commands.getCommands();
-        this.commandsKeys = upath.commands.getCommandsKeys();
+        this.commands = commands.getCommands();
+        this.commandsKeys = commands.getCommandsKeys();
     }
     /**
      * Quit program after destroying downloader

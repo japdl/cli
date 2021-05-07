@@ -4,11 +4,19 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import AdblockerPlugin from "puppeteer-extra-plugin-adblocker";
 import yargs from "yargs";
 import path from "path";
+
+// utils
+import { DownloaderOnChapter, DownloaderOnPage, MangaAttributes, MangaInfos } from "./utils/types";
 import zipper from "./utils/zipper";
-import upath from "./utils/upath";
 import url from "./utils/url";
+import config from "./utils/config";
+import chrome from "./utils/chrome";
+import fsplus from "./utils/fsplus";
+import manga from "./utils/manga";
+
 puppeteer.use(StealthPlugin());
 puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
+
 /**
  * Japscan downloader class, usually used with an interface (that you can make)
  */
@@ -21,51 +29,41 @@ class Downloader {
     verbose: boolean;
     fast: boolean;
     timeout: number;
-    onPage: (
-        attributes: {
-            manga: string;
-            chapter: string;
-            page: string;
-        },
-        savePath: string
-    ) => void;
+    onPage: DownloaderOnPage;
+    onChapter: DownloaderOnChapter;
 
     /**
      * Instantiates a browser and reads config file to get output directory
      * and chrome path
      */
     constructor(options?: {
-        onPage?: (
-            attributes: {
-                manga: string;
-                chapter: string;
-                page: string;
-            },
-            savePath: string
-        ) => void;
+        onPage?: DownloaderOnPage,
+        onChapter?: DownloaderOnChapter
     }) {
-        if (options && options.onPage) {
-            this.onPage = options.onPage;
-        } else {
-            this.onPage = (
-                attributes: {
-                    manga: string;
-                    chapter: string;
-                    page: string;
-                },
-                savePath: string
-            ) => {
-                console.log(
-                    attributes.manga +
-                    " " +
-                    attributes.chapter +
-                    " page " +
-                    attributes.page +
-                    " a été téléchargé à l'endroit: " +
-                    path.resolve(savePath)
-                );
-            };
+        // managing options
+        this.onPage = (options && options.onPage) ? options.onPage : (
+            attributes: MangaAttributes,
+            currentPage: number,
+            totalPages: number
+        ) => {
+            const { manga, chapter } = attributes;
+            const percent = ((currentPage / totalPages) * 100).toFixed(2);
+            let message = `${manga} ${chapter} page ${currentPage}/${totalPages} (${percent}%) `;
+            const k = 20; // bar width
+            const cur = Math.floor((currentPage / totalPages) * k);
+            message = `${message} [${"=".repeat(cur)}${" ".repeat(k-cur)}]`
+            process.stdout.cursorTo(0);
+            process.stdout.write(message);
+            // if at the end, new line
+            if (currentPage === totalPages) process.stdout.write("\n");
+        };
+
+        this.onChapter = (options && options.onChapter) ? options.onChapter : (attributes: MangaAttributes, currentChapter: number, totalChapters: number) => {
+            const { manga, chapter } = attributes;
+            const percent = ((currentChapter / totalChapters) * 100).toFixed(2);
+            console.log(`${manga} ${chapter} a bien été téléchargé, ${currentChapter}/${totalChapters} (${percent}%)`);
         }
+
         // flags
         const flags = yargs(process.argv.slice(2))
             .option("v", { alias: "verbose", boolean: true, default: false })
@@ -84,9 +82,9 @@ class Downloader {
         this.timeout = flags.t * 1000;
 
         // config variables
-        const configVariables = upath.config.getConfigVariables();
+        const configVariables = config.getConfigVariables();
         this.outputDirectory = configVariables.outputDirectory;
-        this.chromePath = upath.chrome.getChromePath(configVariables.chromePath);
+        this.chromePath = chrome.getChromePath(configVariables.chromePath);
 
         // launch puppeteer
         this.onready = new Promise((resolve, reject) => {
@@ -169,11 +167,7 @@ class Downloader {
     getPathFrom(
         param:
             | string
-            | {
-                manga: string;
-                chapter: string;
-                page: string;
-            }
+            | MangaAttributes
     ): string {
         if (typeof param === "string") {
             return this.getPathFrom(url.getAttributesFromLink(param));
@@ -189,7 +183,7 @@ class Downloader {
      * @param type usually 'volume' or 'chapitre'
      * @returns cbr name
      */
-    getCbrFrom(manga: string, number: number, type: string): string {
+    getCbrFrom(manga: string, number: number, type: "chapitre" | "volume"): string {
         return `${this.outputDirectory}/${manga}/${manga}-${type}-${number}.cbr`;
     }
 
@@ -249,8 +243,10 @@ class Downloader {
             end
         );
         this.verbosePrint("Liens à télécharger: ", linksToDownload);
+        let i = 1;
         for (const link of linksToDownload) {
             chapterDownloadLocations.push(await this.downloadChapterFromLink(link));
+            this.onChapter(url.getAttributesFromLink(link), i++, linksToDownload.length);
         }
         return chapterDownloadLocations;
     }
@@ -275,11 +271,10 @@ class Downloader {
             if (!isDownloaded) {
                 couldNotDownload.push(pageLink);
             }
+            this.onPage(url.getAttributesFromLink(link), i, numberOfPages);
+
         }
 
-        console.log(
-            "Le chapitre " + startAttributes.chapter + " a bien été téléchargé"
-        );
         if (couldNotDownload.length > 0) {
             if (couldNotDownload.length > 1) {
                 console.log(
@@ -305,7 +300,7 @@ class Downloader {
                 [this.getPathFrom(startAttributes)],
                 this.getCbrFrom(
                     startAttributes.manga,
-                    parseInt(startAttributes.chapter),
+                    parseFloat(startAttributes.chapter),
                     "chapitre"
                 )
             );
@@ -346,8 +341,8 @@ class Downloader {
             attributes.manga,
             attributes.chapter
         );
-        upath.fsplus.createPath(savePath);
-        savePath = path.posix.join(savePath, url.getFilenameFrom(attributes));
+        fsplus.createPath(savePath);
+        savePath = path.posix.join(savePath, manga.getFilenameFrom(attributes));
         const canvasElement = await page.$(popupCanvasSelector);
         let dimensions = await canvasElement?.evaluate((el) => {
             const width = el.getAttribute("width");
@@ -384,7 +379,6 @@ class Downloader {
                 quality: 100,
             })
             .catch((e) => console.log("Erreur dans la capture de l'image", e));
-        this.onPage(attributes, savePath);
         page.close();
         return true;
     }
@@ -443,6 +437,7 @@ class Downloader {
         this.verbosePrint("Récupéré");
         const waiters = [];
         const downloadLocations: Array<string> = [];
+        let i = 1;
         for (const link of toDownloadFrom) {
             console.log("Téléchargement de " + link);
             // should return path of download
@@ -451,6 +446,7 @@ class Downloader {
                 waiters.push(chapterPromise);
             } else {
                 downloadLocations.push(await chapterPromise);
+                this.onChapter(url.getAttributesFromLink(link), i++, toDownloadFrom.length);
             }
         }
 
@@ -469,8 +465,9 @@ class Downloader {
         );
         await zipper
             .zipDirectories(downloadLocations, cbrName)
+            .then(() => console.log("Cbr terminé! Il est enregistré à l'endroit " + cbrName))
             .catch((e) => console.log("Erreur pendant la création du cbr:", e));
-        console.log("Cbr terminé! Il est enregistré à l'endroit " + cbrName);
+
         return downloadLocations;
     }
     /**
@@ -482,11 +479,7 @@ class Downloader {
     async fetchStats(
         mangaName: string,
         _page?: Page
-    ): Promise<{
-        volumes: number;
-        chapters: number;
-        name: string;
-    }> {
+    ): Promise<MangaInfos> {
         this.verbosePrint("Récupération des infos du manga " + mangaName);
         const link = url.joinJapscanURL(this.WEBSITE, "manga", mangaName);
         const page = _page || (await this.goToExistingPage(link));
@@ -522,7 +515,7 @@ class Downloader {
         const chapter = url.getAttributesFromLink(lastChapterLink).chapter;
         return {
             volumes: volumes?.length,
-            chapters: parseInt(chapter),
+            chapters: parseFloat(chapter),
             name: pageMangaName,
         };
     }

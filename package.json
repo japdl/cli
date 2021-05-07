@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "js/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Seysa/japdl"
+    },
   "scripts": {
     "start": "npm run tsc && node .",
     "build": "npm run tsc && pkg .",

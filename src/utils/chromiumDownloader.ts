@@ -1,9 +1,9 @@
 import puppeteer from "puppeteer-extra";
 import path from "path";
-import upath from "./upath";
+import chrome from "./chrome";
 
 (async () => {
-    const revision = upath.chrome.getChromeInfos().revision;
+    const revision = chrome.getChromeInfos().revision;
     const platforms = [
         'linux'
         , 'win64'

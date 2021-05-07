@@ -1,4 +1,5 @@
 import path from "path";
+import { MangaAttributes } from "./types";
 
 const url = {
     joinJapscanURL(...args: string[]): string {
@@ -11,11 +12,7 @@ const url = {
      */
     getAttributesFromLink(
         link: string
-    ): {
-        manga: string;
-        chapter: string;
-        page: string;
-    } {
+    ): MangaAttributes {
         const linkSplit = link.split("/");
         const attributes = {
             manga: linkSplit[4],
@@ -27,25 +24,6 @@ const url = {
                     : linkSplit[6].replace(".html", ""),
         };
         return attributes;
-    },
-    /**
-     * @param param can be a link or manga attributes
-     * @returns file name for the page
-     */
-    getFilenameFrom(
-        param:
-            | string
-            | {
-                manga: string;
-                chapter: string;
-                page: string;
-            }
-    ): string {
-        if (typeof param === "string") {
-            return this.getFilenameFrom(url.getAttributesFromLink(param));
-        } else {
-            return `${param.chapter}_${param.page}.jpg`;
-        }
     },
 };
 
