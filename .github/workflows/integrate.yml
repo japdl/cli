@@ -1,4 +1,4 @@
-name : Node continuous Integration
+name : Node continuous integration
 on: [push, pull_request]
 jobs:
   test_pull_request:
