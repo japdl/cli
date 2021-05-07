@@ -21,12 +21,52 @@ class Downloader {
   verbose: boolean;
   fast: boolean;
   timeout: number;
+  onPage: (
+    attributes: {
+      manga: string;
+      chapter: string;
+      page: string;
+    },
+    savePath: string
+  ) => void;
 
   /**
    * Instantiates a browser and reads config file to get output directory
    * and chrome path
    */
-  constructor() {
+  constructor(options?: {
+    onPage?: (
+      attributes: {
+        manga: string;
+        chapter: string;
+        page: string;
+      },
+      savePath: string
+    ) => void;
+  }) {
+    if (options && options.onPage) {
+      this.onPage = options.onPage;
+    } else {
+      this.onPage = (
+        attributes: {
+          manga: string;
+          chapter: string;
+          page: string;
+        },
+        savePath: string
+      ) => {
+        console.log(
+          attributes.manga +
+            " " +
+            attributes.chapter +
+            " page " +
+            attributes.page +
+            " a été téléchargé à l'endroit: " +
+            path.resolve(savePath)
+        );
+      };
+    }
+    // flags
     const flags = yargs(process.argv.slice(2))
       .option("v", { alias: "verbose", boolean: true, default: false })
       .option("h", { alias: "headless", boolean: true, default: false })
@@ -42,9 +82,13 @@ class Downloader {
     const headless = !flags.h;
     this.fast = flags.f;
     this.timeout = flags.t * 1000;
+
+    // config variables
     const configVariables = upath.config.getConfigVariables();
     this.outputDirectory = configVariables.outputDirectory;
     this.chromePath = upath.chrome.getChromePath(configVariables.chromePath);
+
+    // launch puppeteer
     this.onready = new Promise((resolve, reject) => {
       puppeteer
         .launch({
@@ -82,8 +126,6 @@ class Downloader {
         });
     });
   }
-  // helpers
-
   /** if page exists, go to it, else throw error
    * @param link link to go to
    * @returns a valid japscan page
@@ -91,7 +133,7 @@ class Downloader {
   async goToExistingPage(link: string): Promise<Page> {
     const page = await this.browser.newPage();
     try {
-      await page.goto(link, { timeout: this.timeout});
+      await page.goto(link, { timeout: this.timeout });
     } catch (e) {
       return await this.goToExistingPage(link);
     }
@@ -201,10 +243,14 @@ class Downloader {
         end
     );
     const chapterDownloadLocations: Array<string> = [];
-    const linksToDownload = await this.fetchChapterLinksBetweenRange(mangaName, start, end);
+    const linksToDownload = await this.fetchChapterLinksBetweenRange(
+      mangaName,
+      start,
+      end
+    );
     this.verbosePrint("Liens à télécharger: ", linksToDownload);
-    for(const link of linksToDownload){
-        chapterDownloadLocations.push(await this.downloadChapterFromLink(link));
+    for (const link of linksToDownload) {
+      chapterDownloadLocations.push(await this.downloadChapterFromLink(link));
     }
     return chapterDownloadLocations;
   }
@@ -277,7 +323,7 @@ class Downloader {
 
     this.verbosePrint("Injection du script");
     await page.addScriptTag({
-        path: path.join(__dirname, "inject/inject.js")
+      path: path.join(__dirname, "inject/inject.js"),
     });
 
     const popupCanvasSelector = "body > canvas";
@@ -295,7 +341,11 @@ class Downloader {
 
     const attributes = url.getAttributesFromLink(link);
 
-    let savePath = path.posix.join(this.outputDirectory, attributes.manga, attributes.chapter);
+    let savePath = path.posix.join(
+      this.outputDirectory,
+      attributes.manga,
+      attributes.chapter
+    );
     upath.fsplus.createPath(savePath);
     savePath = path.posix.join(savePath, url.getFilenameFrom(attributes));
     const canvasElement = await page.$(popupCanvasSelector);
@@ -334,15 +384,7 @@ class Downloader {
         quality: 100,
       })
       .catch((e) => console.log("Erreur dans la capture de l'image", e));
-    console.log(
-      attributes.manga +
-        " " +
-        attributes.chapter +
-        " page " +
-        attributes.page +
-        " a été téléchargé à l'endroit: " +
-        path.resolve(savePath)
-    );
+    this.onPage(attributes, savePath);
     page.close();
     return true;
   }
@@ -565,20 +607,22 @@ class Downloader {
     const link = url.joinJapscanURL(this.WEBSITE, "manga", mangaName);
     const page = await this.goToExistingPage(link);
     const linksToChapters = await page.evaluate(() => {
-        const allElements = <NodeListOf<HTMLAnchorElement>>document.querySelectorAll('#chapters_list > .collapse > div > a');
-        const links: string[] = [];
-        allElements.forEach((el: HTMLAnchorElement) => {
-            links.push(el.href);
-        });
-        return links;
+      const allElements = <NodeListOf<HTMLAnchorElement>>(
+        document.querySelectorAll("#chapters_list > .collapse > div > a")
+      );
+      const links: string[] = [];
+      allElements.forEach((el: HTMLAnchorElement) => {
+        links.push(el.href);
+      });
+      return links;
     });
     const rangeLinks = linksToChapters.filter((_link) => {
-        if(_link.includes("volume-")) return false;
-        const chapterNumber = parseFloat(_link.split(/\/+/)[4]);
-        if(chapterNumber >= start && chapterNumber <= end){
-            return true;
-        }
-        return false;
+      if (_link.includes("volume-")) return false;
+      const chapterNumber = parseFloat(_link.split(/\/+/)[4]);
+      if (chapterNumber >= start && chapterNumber <= end) {
+        return true;
+      }
+      return false;
     });
     return rangeLinks.reverse();
   }
@@ -633,24 +677,25 @@ class Downloader {
     if (this.browser) await this.browser.close();
   }
 
-  async downloadWebtoon(link: string): Promise<void>{
-      const page = await this.goToExistingPage(link);
-      await page.waitForTimeout(5000);
-      const image = await page.$('#image');
-      if(image === null) return;
-      const a = await image.$$('a > div');
-      if(a === null) return;
-      a.forEach((pel) => pel.evaluate((el) => document.body.appendChild(el)));
-      page.evaluate(() => {
-        document.querySelectorAll('body > div.container').forEach((el) => el.remove());
+  async downloadWebtoon(link: string): Promise<void> {
+    const page = await this.goToExistingPage(link);
+    await page.waitForTimeout(5000);
+    const image = await page.$("#image");
+    if (image === null) return;
+    const a = await image.$$("a > div");
+    if (a === null) return;
+    a.forEach((pel) => pel.evaluate((el) => document.body.appendChild(el)));
+    page.evaluate(() => {
+      document
+        .querySelectorAll("body > div.container")
+        .forEach((el) => el.remove());
     });
-    for(const el of a){
-        const id = await el.evaluate((el) => el.id);
-        el.screenshot({
-            path: path.join(process.cwd(), "manga", "solo-leveling-" + id + ".jpg"),
-        })
+    for (const el of a) {
+      const id = await el.evaluate((el) => el.id);
+      el.screenshot({
+        path: path.join(process.cwd(), "manga", "solo-leveling-" + id + ".jpg"),
+      });
     }
-      // */
   }
 }
 

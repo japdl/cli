@@ -50,7 +50,7 @@ module.exports = {
                     const downloadLocations = await inter.downloadChapters(mangaName, range.start, range.end);
                     upath.manga.rmIfSFlag(args, downloadLocations);
                 } else {
-                    if (args[3].toLowerCase().includes('f') && upath.manga.alreadyDownloaded(path.join(inter.outputDirectory, mangaName, number.toString()))) {
+                    if (!args[3].toLowerCase().includes('f') && upath.manga.alreadyDownloaded(path.join(inter.outputDirectory, mangaName, number.toString()))) {
                         console.log("Le chapitre est déjà téléchargé, si vous voulez quand même le re-télécharger,");
                         console.log("Il faut spécifier l'argument 'f' après le numéro de chapitre.");
                         return;
