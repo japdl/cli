@@ -48,11 +48,10 @@ Sur Linux et Mac, il suffit d'écrire ces flags après le nom du programme dans 
 ### Compiler le programme depuis les sources
 ```
 npm install
-npm run tsc
 npm run download
 ```
 ### Puis le lancer
 Attention, une version de node 14 est nécessaire.
 ```
-node .
+npm start
 ```

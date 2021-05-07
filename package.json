@@ -8,7 +8,7 @@
     "build": "npm run tsc && pkg .",
     "test": "npm run tsc && mocha js/test/download.js --exit",
     "tsc": "tsc",
-    "download": "node js/src/utils/chromiumDownloader.js",
+    "download": "npm run tsc && node js/src/utils/chromiumDownloader.js",
     "tester": "npm run tsc && node js/src/tester.js"
   },
   "pkg": {
