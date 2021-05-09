@@ -6,10 +6,10 @@ import url from "../src/utils/url";
 import zipper from "../src/utils/zipper";
 
 module.exports = {
-    description: "Fabrique un cbr du volume|chapitre indiqué",
-    usage: "zip <nom-du-manga> <volume|chapitre> <numéro>",
+    description: "Fabrique un cbr du volume|chapitre indiqué. Les intervalles s'écrivent séparées par des '-'.",
+    usage: "zip <nom-du-manga> <volume|chapitre> <numéro|intervalle>",
     aliases: ["z", "cbr"],
-    example: ["zip one-piece volume 99", "zip chainsaw-man chapitre 50"],
+    example: ["zip one-piece volume 99", "zip chainsaw-man chapitre 50", "zip one-punch-man chap 1-50"],
     argsNeeded: 3,
     async execute(inter: CLInterface, args: string[]): Promise<void> {
         const mangaName = args[0];
