@@ -1,4 +1,4 @@
-import CLIInterface from "../src/CLIInterface";
+import CLInterface from "../src/CLIInterface";
 import path from "path";
 import manga from "../src/utils/manga";
 import mangaFormat from "../src/utils/mangaFormat";
@@ -9,7 +9,7 @@ module.exports = {
     example: ["telecharge one-piece volume 99 s", "telecharge one-piece volume 99", "telecharge chainsaw-man chapitre 50", "telecharge fire-punch volume 1-8", "telecharge demon-slayer chapitre 1-50"],
     aliases: ["t"],
     argsNeeded: 3,
-    async execute(inter: CLIInterface, args: string[]): Promise<void> {
+    async execute(inter: CLInterface, args: string[]): Promise<void> {
         const mangaName = args[0];
         const format = mangaFormat.returnFullFormat(args[1]);
         if (!format) {

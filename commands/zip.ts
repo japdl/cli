@@ -1,4 +1,4 @@
-import CLIInterface from "../src/CLIInterface";
+import CLInterface from "../src/CLIInterface";
 import fsplus from "../src/utils/fsplus";
 import manga from "../src/utils/manga";
 import mangaFormat from "../src/utils/mangaFormat";
@@ -11,7 +11,7 @@ module.exports = {
     aliases: ["z", "cbr"],
     example: ["zip one-piece volume 99", "zip chainsaw-man chapitre 50"],
     argsNeeded: 3,
-    async execute(inter: CLIInterface, args: string[]): Promise<void> {
+    async execute(inter: CLInterface, args: string[]): Promise<void> {
         const mangaName = args[0];
         const format = mangaFormat.returnFullFormat(args[1]);
         if (!format) {

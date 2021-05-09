@@ -1,5 +1,5 @@
 import fs from "fs";
-import CLIInterface from "../CLIInterface";
+import CLInterface from "../CLIInterface";
 import { MangaAttributes } from "./types";
 import url from "./url";
 
@@ -38,7 +38,7 @@ const manga = {
             return `${param.chapter}_${param.page}.jpg`;
         }
     },
-    async handleRange(inter: CLIInterface, mangaName: string, format: string, range: string): Promise<{ start: number; end: number; } | number | Error> {
+    async handleRange(inter: CLInterface, mangaName: string, format: string, range: string): Promise<{ start: number; end: number; } | number | Error> {
         if (range.includes('-')) {
             const split = range.split(/-+/);
             let start = +split[0];

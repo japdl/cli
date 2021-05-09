@@ -1,12 +1,10 @@
-const volumeAliases = ["volume", "vol", "v"];
-const chapterAliases = ["chapitre", "chap", "c"];
-const formats = [volumeAliases, chapterAliases];
+const acceptedFormats = ["volume", "chapitre"];
 function returnFullFormat(_format: string): "volume" | "chapitre" | false {
-    for(const format of formats){
-        if(format.includes(_format)){
+    for(const format of acceptedFormats){
+        if(format.startsWith(_format)){
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             //@ts-ignore
-            return format[0];
+            return format;
         }
     }
     return false;
@@ -14,14 +12,22 @@ function returnFullFormat(_format: string): "volume" | "chapitre" | false {
 
 function stringError(badFormat: string): string {
     let buffer = "";
-    buffer += "japdl ne peut pas télécharger de '" + badFormat + "', il ne peut télécharger que:\n";
-    formats.forEach((types) => types.forEach((type) => {
+    buffer += "japdl ne peut pas télécharger de '" + badFormat + "', il ne peut télécharger que des:\n";
+    const options: string[] = [];
+    acceptedFormats.forEach((format) => {
+        let optionBuffer = "";
+        Array.from(format).forEach((letter) => {
+            optionBuffer += letter;
+            options.push(optionBuffer);
+        });
+    })
+
+    options.forEach((type)  => {
         buffer += `- '${type}'\n`;
-    }));
+    });
     return buffer;
 }
 export default {
-    formats: formats,
     returnFullFormat: returnFullFormat,
     stringError:stringError
 }

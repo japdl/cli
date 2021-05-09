@@ -17,7 +17,7 @@ puppeteer.use(StealthPlugin());
 puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
 
 /**
- * Japscan downloader class, usually used with an interface (that you can make)
+ * Japscan downloader class, usually used with an interface
  */
 class Downloader {
     WEBSITE = "https://www.japscan.se";
@@ -38,6 +38,7 @@ class Downloader {
     /**
      * Instantiates a browser and reads config file to get output directory
      * and chrome path
+     * @param options Can take definitions of onEvent callbacks, default are empty callbacks
      */
     constructor(options?: {
         onPage?: DownloaderOnPage,
@@ -172,10 +173,10 @@ class Downloader {
      * @param manga manga name
      * @param number number of volume or chapter
      * @param type usually 'volume' or 'chapitre'
-     * @returns cbr name
+     * @returns cbr path
      */
     getCbrFrom(manga: string, number: string, type: string): string {
-        return `${this.outputDirectory}/${manga}/${manga}-${type}-${number}.cbr`;
+        return path.resolve(`${this.outputDirectory}/${manga}/${manga}-${type}-${number}.cbr`);
     }
 
     /**
@@ -248,7 +249,7 @@ class Downloader {
     /**
      * @param link link to download from
      * @param compression default as false, tells if chapter is compressed as a cbr after downloading
-     * @returns
+     * @returns chapter's download location
      */
     async downloadChapterFromLink(
         link: string,
@@ -259,6 +260,7 @@ class Downloader {
         const numberOfPages = await this.fetchNumberOfPagesInChapter(link);
 
         const couldNotDownload: string[] = [];
+        this.onPage(startAttributes, 0, numberOfPages);
         for (let i = 1; i <= numberOfPages; i++) {
             const pageLink = `${link}${i}.html`;
             const isDownloaded = await this.downloadImageFromLink(pageLink);
@@ -290,14 +292,7 @@ class Downloader {
         }
 
         if (compression) {
-            await zipper.zipDirectories(
-                [this.getPathFrom(startAttributes)],
-                this.getCbrFrom(
-                    startAttributes.manga,
-                    startAttributes.chapter,
-                    "chapitre"
-                )
-            );
+            zipper.safeZip(this, startAttributes.manga, "chapitre", startAttributes.chapter, [this.getPathFrom(startAttributes)]);
         }
         return this.getPathFrom(startAttributes);
     }
@@ -408,6 +403,7 @@ class Downloader {
      *
      * @param mangaName manga name
      * @param volumeNumber volume number
+     * @param compression default as true, tells if volume is compressed as a cbr after downloading
      * @returns array of paths, where the chapters of the volume were downloaded
      */
     async downloadVolume(
@@ -442,7 +438,6 @@ class Downloader {
         const downloadLocations: Array<string> = [];
         let i = 1;
         for (const link of toDownloadFrom) {
-            console.log("Téléchargement de " + link);
             // should return path of download
             const chapterPromise = this.downloadChapterFromLink(link);
             if (this.fast) {
@@ -458,19 +453,8 @@ class Downloader {
                 downloadLocations.push(await waiter);
             }
         }
-        const cbrName = this.getCbrFrom(mangaName, volumeNumber.toString(), "volume");
-        console.log(
-            "En train de faire le cbr " +
-            mangaName +
-            " volume " +
-            volumeNumber +
-            "..."
-        );
         if (compression) {
-            await zipper
-                .zipDirectories(downloadLocations, cbrName)
-                .then(() => console.log("Cbr terminé! Il est enregistré à l'endroit " + cbrName))
-                .catch((e) => console.log("Erreur pendant la création du cbr:", e));
+            zipper.safeZip(this, mangaName, "volume", volumeNumber.toString(), downloadLocations);
         }
         return downloadLocations;
     }
@@ -586,6 +570,7 @@ class Downloader {
      * @param mangaName manga name
      * @param start start chapter
      * @param end end chapter
+     * @returns array of links to download from in range start - end
      */
     async fetchChapterLinksBetweenRange(
         mangaName: string,
@@ -662,6 +647,11 @@ class Downloader {
         return numberOfPages;
     }
 
+    /**
+     * Only prints msg with printFunction if this.verbose is true
+     * @param printFunction function used to print msg param
+     * @param msg msg param to print
+     */
     verbosePrint(printFunction: unknown, ...msg: unknown[]): void {
         if (this.verbose) {
             if (printFunction instanceof Function) {
@@ -673,13 +663,17 @@ class Downloader {
     }
 
     /**
-     * destroy browser, do not use downloader after this operation (will crash)
+     * destroy browser, do not use downloader after this operation
      */
     async destroy(): Promise<void> {
-        this.verbosePrint(console.log, console.log, "Destruction du downloader");
+        this.verbosePrint(console.log, "Destruction du downloader");
         if (this.browser) await this.browser.close();
     }
 
+    /**
+     * NOT YET IMPLEMENTED
+     * @param link to download from
+     */
     async downloadWebtoon(link: string): Promise<void> {
         const page = await this.goToExistingPage(link);
         await page.waitForTimeout(5000);

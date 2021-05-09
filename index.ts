@@ -1,5 +1,5 @@
 //import GUIInterface from "./src/GUIInterface"; const inter = new GUIInterface();
-import CLIInterface from "./src/CLIInterface"; const inter = new CLIInterface();
+import CLInterface from "./src/CLIInterface"; const inter = new CLInterface();
 
 inter.onready.then(() => {
     inter.start();

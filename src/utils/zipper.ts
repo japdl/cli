@@ -1,9 +1,20 @@
 import archiver from "archiver";
 import fs from "fs";
+import Downloader from "../Downloader";
 
 const zipper = {
-    async zipDirectory(source: string, out:string): Promise<void> {
-        return this.zipDirectories([source], out);
+    async safeZip(downloader: Downloader, mangaName: string, mangaType: string, mangaNumber: string, directories: string[]): Promise<void> {
+        console.log(`En train de faire le cbr ${mangaName} ${mangaType} ${mangaNumber}...`);
+        const cbrName = downloader.getCbrFrom(
+            mangaName,
+            mangaNumber,
+            mangaType
+        );
+        await zipper.zipDirectories(
+            directories,
+            cbrName
+        ).then(() => console.log("Cbr terminé! Il est enregistré à l'endroit " + cbrName))
+            .catch((e) => console.log("Erreur pendant la création du cbr (" + cbrName + "):", e));
     },
     /**
      * @param {String[]} source is an array of path

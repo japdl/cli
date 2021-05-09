@@ -1,4 +1,4 @@
-import CLIInterface from "../CLIInterface";
+import CLInterface from "../CLIInterface";
 
 export interface MangaAttributes {
     manga: string;
@@ -18,7 +18,7 @@ export interface CLICommand {
     aliases: string[];
     example: string[];
     argsNeeded: number;
-    execute(inter: CLIInterface, args: string[]): Promise<void>;
+    execute(inter: CLInterface, args: string[]): Promise<void>;
 }
 
 export type DownloaderOnPage =
