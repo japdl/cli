@@ -1,11 +1,11 @@
 import readline from "readline";
 import Downloader from "./Downloader";
-import upath from "./utils/upath";
-
+import commands from "./utils/commands";
+import { MangaAttributes } from "./utils/types";
 /**
  * Interface implementation for downloader
  */
-class CLIInterface extends Downloader {
+class CLInterface extends Downloader {
     rl: readline.Interface;
     downloader!: Downloader;
     commands: Promise<Record<string, {
@@ -14,62 +14,68 @@ class CLIInterface extends Downloader {
         aliases: string[];
         example: string[];
         argsNeeded: number;
-        execute(inter: CLIInterface, args: string[]): Promise<void>;
+        execute(inter: CLInterface, args: string[]): Promise<void>;
     }>>;
     commandsKeys: string[];
 
+    /**
+     * Initiates basic options to downloader,
+     * creates readline interface,
+     * get commands from files in commands/
+     */
     constructor() {
-        super();
+        const basicOptions = {
+            onPage: (
+                attributes: MangaAttributes,
+                currentPage: number,
+                totalPages: number
+            ) => {
+                const { manga, chapter } = attributes;
+                const percent = ((currentPage / totalPages) * 100).toFixed(2);
+                let message = `${manga} ${chapter} page ${currentPage}/${totalPages} (${percent}%)`;
+                const k = 20; // bar width
+                const cur = Math.floor((currentPage / totalPages) * k);
+                message = `${message}  [${"=".repeat(cur)}${" ".repeat(k - cur)}]`
+                readline.cursorTo(process.stdout, 0);
+                process.stdout.write(message);
+                // if at the end, new line
+                if (currentPage === totalPages) process.stdout.write("\n");
+            },
+            onChapter: (attributes: MangaAttributes, currentChapter: number, totalChapters: number) => {
+                const { manga, chapter } = attributes;
+                const percent = ((currentChapter / totalChapters) * 100).toFixed(2);
+                console.log(`${manga} ${chapter} a bien été téléchargé, ${currentChapter}/${totalChapters} (${percent}%)`);
+            },
+            onVolume: (mangaName: string, current: number, total: number) => {
+                const percent = ((current / total) * 100).toFixed(2);
+                console.log(`${mangaName} volume ${current}/${total} (${percent}%)`);
+            }
+        }
+        super(basicOptions);
         this.rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
             terminal: false,
         });
-        this.commands = upath.commands.getCommands();
-        this.commandsKeys = upath.commands.getCommandsKeys();
+        this.commands = commands.getCommands();
+        this.commandsKeys = commands.getCommandsKeys();
     }
-    /**
-     * Quit program after destroying downloader
-     */
-    async quit(): Promise<void> {
-        console.log("Merci d'avoir utilisé japdl!");
-        this.closeInput();
-        this.rl.close();
-        await this.destroy();
-    }
+
     /**
      * Starts reading commands from terminal
      */
-    handleInput(): void {
+     handleInput(): void {
         this.rl.on('line', (line) => this.readCommands(line));
     }
     /**
      * Stops reading commands from terminal
      */
-    closeInput(): void {
+     closeInput(): void {
         this.rl.removeAllListeners();
     }
     /**
      * Displays help in terminal
      */
-    displayHelp(): void {
-        console.log("- help -> réécrit cette aide");
-        console.log("- q ou quit -> quitte le programme");
-        console.log("- telecharge -> exemples: ");
-        console.log("\ttelecharge one-piece volume 99");
-        console.log("\ttelecharge chainsaw-man chapitre 50");
-        console.log("\ttelecharge fire-punch volume 1-8");
-        console.log("\ttelecharge demon-slayer chapitre 1-50");
-        console.log("\tOn peut rajouter des lettres après le(s) numéro(s) de chapitre/volume:");
-        console.log("\t\tf : force le téléchargement même si le dossier du chapitre existe déjà ");
-        console.log("\t\ts: supprime les dossiers d'image après la création du cbr");
-        console.log("\t\tExemple des 2 lettres: telecharge one-piece chapitre 999 sf");
-        console.log("\t\tL'ordre des lettres n'a pas d'importance");
-        console.log("- zip -> zip one-piece chapitre 999");
-        console.log("\tZip le dossier d'image du chapitre 999 en cbr");
-        console.log("- info -> info one-piece");
-        console.log("\tDonne le nombre de chapitre et volume du manga");
-    }
     async dynamicDisplayHelp(): Promise<void> {
         const commands = await this.commands;
         this.commandsKeys.forEach((key: string) => {
@@ -81,7 +87,7 @@ class CLIInterface extends Downloader {
                 console.log("\texemple" + ((command.example.length > 1) ? "s" : "") + ": \n\t\t- " + command.example.join('\n\t\t- '));
             }
         });
-        console.log("\n /!\\ | Les noms de mangas ne peuvent pas contenir d'espace ni de caractères spéciaux.");
+        console.log("\n /!\\ | Les noms de mangas ne peuvent pas contenir d'espaces ni de caractères spéciaux.");
         console.log("       Pour écrire One Piece par exemple, il faudra l'écrire de la manière suivante: 'one-piece'. Ce nom est décidé par japscan, pas par japdl.");
         console.log(`       Si vous n'êtes pas sûr, allez sur ${this.WEBSITE} à la page du manga. Le nom du manga sera dans le lien, après '${this.WEBSITE}/manga/'`);
     }
@@ -103,10 +109,11 @@ class CLIInterface extends Downloader {
      */
     async readCommands(line: string): Promise<void> {
         const split: string[] = line.split(/ +/);
+        this.verbosePrint(console.table, split);
         const command: string = split[0].toLowerCase();
         const args: string[] = split.slice(1);
+        args.map((arg) => arg.toLowerCase());
         const commandsReady = await this.commands;
-
         const commandObject = commandsReady[command];
 
         if (commandObject === undefined) {
@@ -120,7 +127,7 @@ class CLIInterface extends Downloader {
             try {
                 await commandObject.execute(this, args);
             } catch (e) {
-                console.log("Une erreur s'est produite:", e);
+                console.log("Une erreur s'est produite:", e.message.toString());
             }
         }
         this.printSeparator();
@@ -143,12 +150,22 @@ class CLIInterface extends Downloader {
     /**
      * Starts interface
      */
-    start(): void {
+     start(): void {
         this.dynamicDisplayHelp().then(() => {
             this.printSeparator();
             this.handleInput();
         });
     }
+
+    /**
+     * Quit program after destroying downloader and readline interface
+     */
+     async quit(): Promise<void> {
+        console.log("Merci d'avoir utilisé japdl!");
+        this.closeInput();
+        this.rl.close();
+        await this.destroy();
+    }
 }
 
-export default CLIInterface;
+export default CLInterface;

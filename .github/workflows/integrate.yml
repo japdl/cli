@@ -9,6 +9,6 @@ jobs:
         with:
           node-version: 14
       - run: npm ci
-      - run: npm run download
+      - run: npm run downloadtest
       - run: npm test
       - run: npm run build
