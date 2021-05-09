@@ -181,6 +181,7 @@ class Downloader {
     /**
      * @param mangaName manga name
      * @param chapter number of chapter
+     * @param compression default as false, tells if chapter is compressed as a cbr after downloading
      * @returns download location
      */
     async downloadChapter(mangaName: string, chapter: number, compression = true): Promise<string> {
@@ -212,6 +213,7 @@ class Downloader {
      * @param mangaName manga name
      * @param start start chapter
      * @param end end chapter
+     * @param compression default as false, tells if chapter is compressed as a cbr after downloading
      * @returns download locations as an array
      */
     async downloadChapters(
@@ -374,7 +376,13 @@ class Downloader {
         page.close();
         return true;
     }
-
+    /**
+     * @param mangaName manga name
+     * @param start start chapter
+     * @param end end chapter
+     * @param compression default as false, tells if chapter is compressed as a cbr after downloading
+     * @returns array of download locations for each volume
+     */
     async downloadVolumes(
         mangaName: string,
         start: number,

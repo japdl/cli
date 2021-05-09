@@ -49,8 +49,14 @@ module.exports = {
                     manga.rmLocations(downloadLocations);
                 }
             } else {
-                if (!args[3].includes('f') && manga.alreadyDownloaded(path.join(inter.outputDirectory, mangaName, toDownload.toString()))) {
-                    throw new Error("Le chapitre est déjà téléchargé, si vous voulez quand même le re-télécharger, il faut spécifier l'argument 'f' après le numéro de chapitre.");
+                if (!args[3].includes('f')) {
+                    const reasons = [];
+                    const folder = manga.alreadyDownloaded(path.join(inter.outputDirectory, mangaName, toDownload.toString()));
+                    if(folder) reasons.push("téléchargé");
+                    const cbr = manga.alreadyDownloaded(inter.getCbrFrom(mangaName, toDownload.toString(), "chapitre"), false);
+                    if(cbr) reasons.push("zippé");
+                    if (folder || cbr)
+                        throw new Error(`Le chapitre est déjà ${reasons.join(' et ')}, si vous voulez quand même le re-télécharger, il faut spécifier l'argument 'f' après le numéro de chapitre.`);
                 }
                 const downloadLocation = await inter.downloadChapter(mangaName, toDownload, zip);
                 if (deleteAfter) {

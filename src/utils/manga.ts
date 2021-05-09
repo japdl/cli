@@ -6,11 +6,14 @@ import url from "./url";
 
 
 const manga = {
-    alreadyDownloaded(path: string): boolean {
-        let folderExists = false;
+    alreadyDownloaded(path: string, isDirectory = true): boolean {
         try {
-            folderExists = fs.lstatSync(path).isDirectory();
-            return folderExists;
+            const fileStats = fs.lstatSync(path);
+            if(isDirectory){
+                return fileStats.isDirectory();
+            } else {
+                return fileStats.isFile();
+            }
         } catch (e) {
             return false;
         }
