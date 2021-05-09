@@ -36,6 +36,12 @@ module.exports = {
                     });
                 }
             } else {
+                if (!args[3].includes('f')) {
+                    const cbr = manga.alreadyDownloaded(inter.getCbrFrom(mangaName, toDownload.toString(), "volume"), false);
+                    if (cbr) {
+                        throw new Error(`Le chapitre est déjà en cbr, si vous voulez quand même le re-télécharger, il faut spécifier l'argument 'f' après le numéro de chapitre.`);
+                    }
+                }
                 const downloadLocations = await inter.downloadVolume(mangaName, toDownload, zip);
                 if (deleteAfter) {
                     manga.rmLocations(downloadLocations);
@@ -52,9 +58,9 @@ module.exports = {
                 if (!args[3].includes('f')) {
                     const reasons = [];
                     const folder = manga.alreadyDownloaded(path.join(inter.outputDirectory, mangaName, toDownload.toString()));
-                    if(folder) reasons.push("téléchargé");
+                    if (folder) reasons.push("téléchargé");
                     const cbr = manga.alreadyDownloaded(inter.getCbrFrom(mangaName, toDownload.toString(), "chapitre"), false);
-                    if(cbr) reasons.push("zippé");
+                    if (cbr) reasons.push("en cbr");
                     if (folder || cbr)
                         throw new Error(`Le chapitre est déjà ${reasons.join(' et ')}, si vous voulez quand même le re-télécharger, il faut spécifier l'argument 'f' après le numéro de chapitre.`);
                 }

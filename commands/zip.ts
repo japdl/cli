@@ -15,8 +15,7 @@ module.exports = {
         const mangaName = args[0];
         const format = mangaFormat.returnFullFormat(args[1]);
         if (!format) {
-            console.log(mangaFormat.stringError(args[1]));
-            return;
+            throw new Error(mangaFormat.stringError(args[1]));
         }
         const toDownload: { start: number, end: number } | number | Error = await manga.handleRange(inter, mangaName, format, args[2]);
         if (toDownload instanceof Error) {
