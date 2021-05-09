@@ -4,10 +4,8 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import AdblockerPlugin from "puppeteer-extra-plugin-adblocker";
 import yargs from "yargs";
 import path from "path";
-import readline from "readline";
-
 // utils
-import { DownloaderOnChapter, DownloaderOnPage, MangaAttributes, MangaInfos } from "./utils/types";
+import { DownloaderOnChapter, DownloaderOnPage, DownloaderOnVolume, MangaAttributes, MangaInfos } from "./utils/types";
 import zipper from "./utils/zipper";
 import url from "./utils/url";
 import config from "./utils/config";
@@ -30,8 +28,12 @@ class Downloader {
     verbose: boolean;
     fast: boolean;
     timeout: number;
-    onPage: DownloaderOnPage;
-    onChapter: DownloaderOnChapter;
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    onPage: DownloaderOnPage = () => { };
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    onChapter: DownloaderOnChapter = () => { };
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    onVolume: DownloaderOnVolume = () => { };
 
     /**
      * Instantiates a browser and reads config file to get output directory
@@ -40,29 +42,17 @@ class Downloader {
     constructor(options?: {
         onPage?: DownloaderOnPage,
         onChapter?: DownloaderOnChapter
+        onVolume?: DownloaderOnVolume;
     }) {
         // managing options
-        this.onPage = (options && options.onPage) ? options.onPage : (
-            attributes: MangaAttributes,
-            currentPage: number,
-            totalPages: number
-        ) => {
-            const { manga, chapter } = attributes;
-            const percent = ((currentPage / totalPages) * 100).toFixed(2);
-            let message = `${manga} ${chapter} page ${currentPage}/${totalPages} (${percent}%) `;
-            const k = 20; // bar width
-            const cur = Math.floor((currentPage / totalPages) * k);
-            message = `${message} [${"=".repeat(cur)}${" ".repeat(k-cur)}]`
-            readline.cursorTo(process.stdout, 0);
-            process.stdout.write(message);
-            // if at the end, new line
-            if (currentPage === totalPages) process.stdout.write("\n");
-        };
-
-        this.onChapter = (options && options.onChapter) ? options.onChapter : (attributes: MangaAttributes, currentChapter: number, totalChapters: number) => {
-            const { manga, chapter } = attributes;
-            const percent = ((currentChapter / totalChapters) * 100).toFixed(2);
-            console.log(`${manga} ${chapter} a bien été téléchargé, ${currentChapter}/${totalChapters} (${percent}%)`);
+        if (options) {
+            for (const option of Object.entries(options)) {
+                // this[options[0]] becomes this.onPage, this.onChapter and this.onVolume
+                // option[1] is the function given
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                this[option[0]] = option[1];
+            }
         }
 
         // flags
@@ -184,7 +174,7 @@ class Downloader {
      * @param type usually 'volume' or 'chapitre'
      * @returns cbr name
      */
-    getCbrFrom(manga: string, number: number, type: "chapitre" | "volume"): string {
+    getCbrFrom(manga: string, number: string, type: string): string {
         return `${this.outputDirectory}/${manga}/${manga}-${type}-${number}.cbr`;
     }
 
@@ -301,7 +291,7 @@ class Downloader {
                 [this.getPathFrom(startAttributes)],
                 this.getCbrFrom(
                     startAttributes.manga,
-                    parseFloat(startAttributes.chapter),
+                    startAttributes.chapter,
                     "chapitre"
                 )
             );
@@ -399,6 +389,7 @@ class Downloader {
         for (let i = start; i <= end; i++) {
             const downloadLocations = await this.downloadVolume(mangaName, i);
             volumeDownloadLocations.push(downloadLocations);
+            this.onVolume(mangaName, i, end - start);
         }
         return volumeDownloadLocations;
     }
@@ -456,7 +447,7 @@ class Downloader {
                 downloadLocations.push(await waiter);
             }
         }
-        const cbrName = this.getCbrFrom(mangaName, volumeNumber, "volume");
+        const cbrName = this.getCbrFrom(mangaName, volumeNumber.toString(), "volume");
         console.log(
             "En train de faire le cbr " +
             mangaName +
@@ -516,7 +507,7 @@ class Downloader {
         const chapter = url.getAttributesFromLink(lastChapterLink).chapter;
         return {
             volumes: volumes?.length,
-            chapters: parseFloat(chapter),
+            chapters: +chapter,
             name: pageMangaName,
         };
     }
@@ -612,7 +603,7 @@ class Downloader {
         });
         const rangeLinks = linksToChapters.filter((_link) => {
             if (_link.includes("volume-")) return false;
-            const chapterNumber = parseFloat(_link.split(/\/+/)[4]);
+            const chapterNumber = +_link.split(/\/+/)[4];
             if (chapterNumber >= start && chapterNumber <= end) {
                 return true;
             }

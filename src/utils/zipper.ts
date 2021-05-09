@@ -2,11 +2,14 @@ import archiver from "archiver";
 import fs from "fs";
 
 const zipper = {
+    async zipDirectory(source: string, out:string): Promise<void> {
+        return this.zipDirectories([source], out);
+    },
     /**
      * @param {String[]} source is an array of path
      * @param {String} out is the filename
      */
-    zipDirectories(source: string[], out: string): Promise<void> {
+    async zipDirectories(source: string[], out: string): Promise<void> {
         const archive = archiver("zip", { zlib: { level: 9 } });
         const stream = fs.createWriteStream(out);
 

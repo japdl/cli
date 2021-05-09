@@ -27,3 +27,5 @@ export type DownloaderOnPage =
         totalPages: number) => void;
 
 export type DownloaderOnChapter = (attributes: MangaAttributes, currentChapter: number, totalChapters: number) => void;
+
+export type DownloaderOnVolume = (mangaName: string, current:number, total:number) => void;

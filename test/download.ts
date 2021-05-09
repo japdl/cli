@@ -64,7 +64,7 @@ describe("Downloading one-piece chapter 999", function () {
         }
     });
     it("cbr must have been created", function () {
-        const cbrName = downloader.getCbrFrom("one-piece", 999, "chapitre");
+        const cbrName = downloader.getCbrFrom("one-piece", "999", "chapitre");
         if (!fs.existsSync(cbrName)) {
             throw new Error("cbr was not created at " + cbrName);
         }

@@ -1,6 +1,7 @@
 import readline from "readline";
 import Downloader from "./Downloader";
 import commands from "./utils/commands";
+import { MangaAttributes } from "./utils/types";
 /**
  * Interface implementation for downloader
  */
@@ -18,13 +19,40 @@ class CLIInterface extends Downloader {
     commandsKeys: string[];
 
     constructor() {
-        super();
+        const basicOptions = {
+            onPage: (
+                attributes: MangaAttributes,
+                currentPage: number,
+                totalPages: number
+            ) => {
+                const { manga, chapter } = attributes;
+                const percent = ((currentPage / totalPages) * 100).toFixed(2);
+                let message = `${manga} ${chapter} page ${currentPage}/${totalPages} (${percent}%)`;
+                const k = 20; // bar width
+                const cur = Math.floor((currentPage / totalPages) * k);
+                message = `${message}  [${"=".repeat(cur)}${" ".repeat(k-cur)}]`
+                readline.cursorTo(process.stdout, 0);
+                process.stdout.write(message);
+                // if at the end, new line
+                if (currentPage === totalPages) process.stdout.write("\n");
+            },
+            onChapter: (attributes: MangaAttributes, currentChapter: number, totalChapters: number) => {
+                const { manga, chapter } = attributes;
+                const percent = ((currentChapter / totalChapters) * 100).toFixed(2);
+                console.log(`${manga} ${chapter} a bien été téléchargé, ${currentChapter}/${totalChapters} (${percent}%)`);
+            },
+            onVolume:  (mangaName: string, current: number, total:number) => {
+                const percent = ((current/ total) * 100).toFixed(2);
+                console.log(`${mangaName} volume ${current}/${total} (${percent}%)`);
+            }
+        }
+        super(basicOptions);
         this.rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
             terminal: false,
         });
-        this.commands = commands.getCommands();
+        this.commands = commands.getCommands()
         this.commandsKeys = commands.getCommandsKeys();
     }
     /**
@@ -80,7 +108,7 @@ class CLIInterface extends Downloader {
                 console.log("\texemple" + ((command.example.length > 1) ? "s" : "") + ": \n\t\t- " + command.example.join('\n\t\t- '));
             }
         });
-        console.log("\n /!\\ | Les noms de mangas ne peuvent pas contenir d'espace ni de caractères spéciaux.");
+        console.log("\n /!\\ | Les noms de mangas ne peuvent pas contenir d'espaces ni de caractères spéciaux.");
         console.log("       Pour écrire One Piece par exemple, il faudra l'écrire de la manière suivante: 'one-piece'. Ce nom est décidé par japscan, pas par japdl.");
         console.log(`       Si vous n'êtes pas sûr, allez sur ${this.WEBSITE} à la page du manga. Le nom du manga sera dans le lien, après '${this.WEBSITE}/manga/'`);
     }
@@ -119,7 +147,8 @@ class CLIInterface extends Downloader {
             try {
                 await commandObject.execute(this, args);
             } catch (e) {
-                console.log("Une erreur s'est produite:", e);
+                e.name = '';
+                console.log("Une erreur s'est produite:", e.toString());
             }
         }
         this.printSeparator();

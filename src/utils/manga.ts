@@ -1,4 +1,5 @@
 import fs from "fs";
+import CLIInterface from "../CLIInterface";
 import { MangaAttributes } from "./types";
 import url from "./url";
 
@@ -21,21 +22,52 @@ const manga = {
             );
         }
     },
-        /**
-     * @param param can be a link or manga attributes
-     * @returns file name for the page
-     */
-         getFilenameFrom(
-            param:
-                | string
-                | MangaAttributes
-        ): string {
-            if (typeof param === "string") {
-                return this.getFilenameFrom(url.getAttributesFromLink(param));
-            } else {
-                return `${param.chapter}_${param.page}.jpg`;
+    /**
+    * @param param can be a link or manga attributes
+    * @returns file name for the page
+    */
+    getFilenameFrom(
+        param:
+            | string
+            | MangaAttributes
+    ): string {
+        if (typeof param === "string") {
+            return this.getFilenameFrom(url.getAttributesFromLink(param));
+        } else {
+            return `${param.chapter}_${param.page}.jpg`;
+        }
+    },
+    async handleRange(inter: CLIInterface, mangaName: string, format:string, range: string): Promise<{ start: number; end: number; } | number | Error> {
+        if(range.includes('-')){
+            const split = range.split(/-+/);
+            let start = +split[0];
+            if (isNaN(start)) {
+                if (split[0] === "debut") {
+                    start = 1;
+                } else {
+                    return new Error(split[0] + " n'est pas un numéro valide, ni 'debut' ou 'fin'");
+                }
             }
-        },
+            let end = +split[1];
+            if (isNaN(end)) {
+                if (split[1] === "fin") {
+                    // if user wants the end of chapters, then total chapters, else total volumes
+                    end = (await inter.fetchStats(mangaName))[(format === "chapitre") ? "chapters" : "volumes"];
+                } else {
+                    return new Error(split[1] + " n'est pas un numéro valide, ni 'debut' ou 'fin'");
+                }
+            }
+            return { start: start, end: end };
+
+        } else {
+            if(isNaN(+range)){
+                return new Error(`Le paramètre du numéro (${range}) n'est pas un numéro valide, ni un ensemble`);
+            } else {
+                return +range;
+            }
+        }
+
+    }
 };
 
 export default manga;
