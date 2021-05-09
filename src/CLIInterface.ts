@@ -30,7 +30,7 @@ class CLIInterface extends Downloader {
                 let message = `${manga} ${chapter} page ${currentPage}/${totalPages} (${percent}%)`;
                 const k = 20; // bar width
                 const cur = Math.floor((currentPage / totalPages) * k);
-                message = `${message}  [${"=".repeat(cur)}${" ".repeat(k-cur)}]`
+                message = `${message}  [${"=".repeat(cur)}${" ".repeat(k - cur)}]`
                 readline.cursorTo(process.stdout, 0);
                 process.stdout.write(message);
                 // if at the end, new line
@@ -41,8 +41,8 @@ class CLIInterface extends Downloader {
                 const percent = ((currentChapter / totalChapters) * 100).toFixed(2);
                 console.log(`${manga} ${chapter} a bien été téléchargé, ${currentChapter}/${totalChapters} (${percent}%)`);
             },
-            onVolume:  (mangaName: string, current: number, total:number) => {
-                const percent = ((current/ total) * 100).toFixed(2);
+            onVolume: (mangaName: string, current: number, total: number) => {
+                const percent = ((current / total) * 100).toFixed(2);
                 console.log(`${mangaName} volume ${current}/${total} (${percent}%)`);
             }
         }
@@ -130,10 +130,11 @@ class CLIInterface extends Downloader {
      */
     async readCommands(line: string): Promise<void> {
         const split: string[] = line.split(/ +/);
+        this.verbosePrint(console.table, split);
         const command: string = split[0].toLowerCase();
         const args: string[] = split.slice(1);
+        args.map((arg) => arg.toLowerCase());
         const commandsReady = await this.commands;
-
         const commandObject = commandsReady[command];
 
         if (commandObject === undefined) {
@@ -147,8 +148,7 @@ class CLIInterface extends Downloader {
             try {
                 await commandObject.execute(this, args);
             } catch (e) {
-                e.name = '';
-                console.log("Une erreur s'est produite:", e.toString());
+                console.log("Une erreur s'est produite:", e.message.toString());
             }
         }
         this.printSeparator();

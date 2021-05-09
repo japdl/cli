@@ -15,12 +15,10 @@ const manga = {
             return false;
         }
     },
-    rmIfSFlag(args: string[], downloadLocations: string[]): void {
-        if (args[3].toLowerCase().includes("s")) {
-            downloadLocations.forEach((path: string) =>
-                fs.rmSync(path, { force: true, recursive: true })
-            );
-        }
+    rmLocations(downloadLocations: string[]): void {
+        downloadLocations.forEach((path: string) =>
+            fs.rmSync(path, { force: true, recursive: true })
+        );
     },
     /**
     * @param param can be a link or manga attributes
@@ -37,8 +35,8 @@ const manga = {
             return `${param.chapter}_${param.page}.jpg`;
         }
     },
-    async handleRange(inter: CLIInterface, mangaName: string, format:string, range: string): Promise<{ start: number; end: number; } | number | Error> {
-        if(range.includes('-')){
+    async handleRange(inter: CLIInterface, mangaName: string, format: string, range: string): Promise<{ start: number; end: number; } | number | Error> {
+        if (range.includes('-')) {
             const split = range.split(/-+/);
             let start = +split[0];
             if (isNaN(start)) {
@@ -60,7 +58,7 @@ const manga = {
             return { start: start, end: end };
 
         } else {
-            if(isNaN(+range)){
+            if (isNaN(+range)) {
                 return new Error(`Le paramètre du numéro (${range}) n'est pas un numéro valide, ni un ensemble`);
             } else {
                 return +range;

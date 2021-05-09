@@ -129,7 +129,7 @@ class Downloader {
         if (await this.isJapscan404(page)) {
             throw new Error("La page " + link + " n'existe pas (404)");
         }
-        this.verbosePrint("Création de la page " + link);
+        this.verbosePrint(console.log, "Création de la page " + link);
         return page;
     }
 
@@ -183,8 +183,8 @@ class Downloader {
      * @param chapter number of chapter
      * @returns download location
      */
-    async downloadChapter(mangaName: string, chapter: number): Promise<string> {
-        this.verbosePrint(
+    async downloadChapter(mangaName: string, chapter: number, compression = true): Promise<string> {
+        this.verbosePrint(console.log,
             "Téléchargement du chapitre " + chapter + " de " + mangaName
         );
         const mangaNameStats = (await this.fetchStats(mangaName)).name;
@@ -205,7 +205,7 @@ class Downloader {
             mangaName,
             chapter.toString()
         );
-        return this.downloadChapterFromLink(link, true);
+        return this.downloadChapterFromLink(link, compression);
     }
 
     /**
@@ -217,9 +217,10 @@ class Downloader {
     async downloadChapters(
         mangaName: string,
         start: number,
-        end: number
+        end: number,
+        compression = true
     ): Promise<string[]> {
-        this.verbosePrint(
+        this.verbosePrint(console.log,
             "Téléchargement des chapitres de " +
             mangaName +
             " de " +
@@ -233,10 +234,10 @@ class Downloader {
             start,
             end
         );
-        this.verbosePrint("Liens à télécharger: ", linksToDownload);
+        this.verbosePrint(console.log, "Liens à télécharger: ", linksToDownload);
         let i = 1;
         for (const link of linksToDownload) {
-            chapterDownloadLocations.push(await this.downloadChapterFromLink(link));
+            chapterDownloadLocations.push(await this.downloadChapterFromLink(link, compression));
             this.onChapter(url.getAttributesFromLink(link), i++, linksToDownload.length);
         }
         return chapterDownloadLocations;
@@ -251,7 +252,7 @@ class Downloader {
         link: string,
         compression = false
     ): Promise<string> {
-        this.verbosePrint("Téléchargement du chapitre depuis le lien " + link);
+        this.verbosePrint(console.log, "Téléchargement du chapitre depuis le lien " + link);
         const startAttributes = url.getAttributesFromLink(link);
         const numberOfPages = await this.fetchNumberOfPagesInChapter(link);
 
@@ -304,21 +305,21 @@ class Downloader {
      * @returns if image could be downloaded
      */
     async downloadImageFromLink(link: string): Promise<boolean> {
-        this.verbosePrint("Téléchargement de l'image depuis le lien " + link);
+        this.verbosePrint(console.log, "Téléchargement de l'image depuis le lien " + link);
         const page = await this.goToExistingPage(link);
 
-        this.verbosePrint("Injection du script");
+        this.verbosePrint(console.log, "Injection du script");
         await page.addScriptTag({
             path: path.join(__dirname, "inject/inject.js"),
         });
 
         const popupCanvasSelector = "body > canvas";
         try {
-            this.verbosePrint("Attente du script de page...");
+            this.verbosePrint(console.log, "Attente du script de page...");
             await page.waitForSelector(popupCanvasSelector, {
                 timeout: this.timeout,
             });
-            this.verbosePrint("Attente terminée");
+            this.verbosePrint(console.log, "Attente terminée");
         } catch (e) {
             console.log("Cette page n'a pas l'air d'avoir d'images");
             await page.close();
@@ -361,7 +362,7 @@ class Downloader {
         await page.evaluate(() => {
             document.querySelectorAll("div").forEach((el) => el.remove());
         });
-        this.verbosePrint("Téléchargement de l'image...");
+        this.verbosePrint(console.log, "Téléchargement de l'image...");
         await canvasElement
             ?.screenshot({
                 omitBackground: true,
@@ -377,9 +378,10 @@ class Downloader {
     async downloadVolumes(
         mangaName: string,
         start: number,
-        end: number
+        end: number,
+        compression = true
     ): Promise<string[][]> {
-        this.verbosePrint(
+        this.verbosePrint(console.log,
             "Téléchargement des volumes " + mangaName + " de " + start + " à " + end
         );
         if (start > end) {
@@ -387,7 +389,7 @@ class Downloader {
         }
         const volumeDownloadLocations: Array<Array<string>> = [];
         for (let i = start; i <= end; i++) {
-            const downloadLocations = await this.downloadVolume(mangaName, i);
+            const downloadLocations = await this.downloadVolume(mangaName, i, compression);
             volumeDownloadLocations.push(downloadLocations);
             this.onVolume(mangaName, i, end - start);
         }
@@ -402,7 +404,8 @@ class Downloader {
      */
     async downloadVolume(
         mangaName: string,
-        volumeNumber: number
+        volumeNumber: number,
+        compression = true
     ): Promise<string[]> {
         console.log(
             "Téléchargement du volume " + volumeNumber + " de " + mangaName
@@ -419,14 +422,14 @@ class Downloader {
             );
             mangaName = stats.name;
         }
-        this.verbosePrint("Récupération des informations sur le volume...");
+        this.verbosePrint(console.log, "Récupération des informations sur le volume...");
 
         const toDownloadFrom = await this.fetchVolumeChapters(
             volumeNumber,
             mangaName
         );
 
-        this.verbosePrint("Récupéré");
+        this.verbosePrint(console.log, "Récupéré");
         const waiters = [];
         const downloadLocations: Array<string> = [];
         let i = 1;
@@ -455,11 +458,12 @@ class Downloader {
             volumeNumber +
             "..."
         );
-        await zipper
-            .zipDirectories(downloadLocations, cbrName)
-            .then(() => console.log("Cbr terminé! Il est enregistré à l'endroit " + cbrName))
-            .catch((e) => console.log("Erreur pendant la création du cbr:", e));
-
+        if (compression) {
+            await zipper
+                .zipDirectories(downloadLocations, cbrName)
+                .then(() => console.log("Cbr terminé! Il est enregistré à l'endroit " + cbrName))
+                .catch((e) => console.log("Erreur pendant la création du cbr:", e));
+        }
         return downloadLocations;
     }
     /**
@@ -472,7 +476,7 @@ class Downloader {
         mangaName: string,
         _page?: Page
     ): Promise<MangaInfos> {
-        this.verbosePrint("Récupération des infos du manga " + mangaName);
+        this.verbosePrint(console.log, "Récupération des infos du manga " + mangaName);
         const link = url.joinJapscanURL(this.WEBSITE, "manga", mangaName);
         const page = _page || (await this.goToExistingPage(link));
         const pageMangaName = url.getAttributesFromLink(page.url()).manga;
@@ -522,7 +526,7 @@ class Downloader {
         volumeNumber: number,
         mangaName: string
     ): Promise<Array<string>> {
-        this.verbosePrint(
+        this.verbosePrint(console.log,
             "Récupération des chapitres du volume " +
             volumeNumber +
             " du manga " +
@@ -618,18 +622,18 @@ class Downloader {
      * @returns number of pages in chapter
      */
     async fetchNumberOfPagesInChapter(link: string): Promise<number> {
-        this.verbosePrint(
+        this.verbosePrint(console.log,
             "Recupération du nombre de pages pour le chapitre " + link
         );
         const startPage = await this.goToExistingPage(link);
         const chapterSelectSelector =
             "div.div-select:nth-child(2) > .ss-main > .ss-content > .ss-list";
         try {
-            this.verbosePrint("Attente du script de page...");
+            this.verbosePrint(console.log, "Attente du script de page...");
             await startPage.waitForSelector(chapterSelectSelector, {
                 timeout: this.timeout,
             });
-            this.verbosePrint("Attente terminée");
+            this.verbosePrint(console.log, "Attente terminée");
         } catch (e) {
             await startPage.close();
             return await this.fetchNumberOfPagesInChapter(link);
@@ -645,20 +649,26 @@ class Downloader {
         const numberOfPages = await chapterSelect.evaluate(
             (el) => el.childElementCount
         );
-        this.verbosePrint("Nombre de page(s): " + numberOfPages);
+        this.verbosePrint(console.log, "Nombre de page(s): " + numberOfPages);
         await startPage.close();
         return numberOfPages;
     }
 
-    verbosePrint(...msg: unknown[]): void {
-        if (this.verbose) console.log(...msg);
+    verbosePrint(printFunction: unknown, ...msg: unknown[]): void {
+        if (this.verbose) {
+            if (printFunction instanceof Function) {
+                printFunction(...msg);
+            } else {
+                throw new Error("verbosePrint used with nonFunction parameter");
+            }
+        }
     }
 
     /**
      * destroy browser, do not use downloader after this operation (will crash)
      */
     async destroy(): Promise<void> {
-        this.verbosePrint("Destruction du downloader");
+        this.verbosePrint(console.log, console.log, "Destruction du downloader");
         if (this.browser) await this.browser.close();
     }
 

@@ -8,7 +8,7 @@ let downloader: Downloader;
 describe("Downloader tests", function () {
     it("Downloader instantiation", function () {
         this.timeout(0);
-        downloader = new Downloader();
+        downloader = new Downloader({onPage: (attributes, current, total) => console.log(`${attributes.manga} ${attributes.chapter} ${current}/${total}`)});
         return downloader.onready;
     });
 });
