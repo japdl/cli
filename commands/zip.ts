@@ -53,7 +53,7 @@ module.exports = {
         const isWorthZipping = fsplus.tellIfDoesntExist(toZip);
         if (isWorthZipping) {
             const numberString = (typeof toDownload === "number") ? toDownload.toString() : `${toDownload.start}-${toDownload.end}`;
-            zipper.zipDirectories(toZip, inter.getCbrFrom(mangaName, numberString, format));
+            await zipper.safeZip(inter, mangaName, format, numberString, toZip);
         }
     }
 }

@@ -14,7 +14,7 @@ const fsplus = {
                 found.push({ location: location });
             }
         });
-        console.log(`${found.length}/${locations.length} ont été ajoutés au zip`);
+        console.log(`${found.length}/${locations.length} vont être ajoutés au zip`);
         return !!found.length;
     },
     mkdirIfDoesntExist(path: string): void {
