@@ -14,8 +14,7 @@
     "tsc": "tsc",
     "download": "npm run tsc && node js/src/utils/chromiumDownloader.js",
     "downloadtest": "npm run tsc && node js/src/utils/chromiumDownloader.js --testing",
-    "tester": "npm run tsc && node js/src/tester.js",
-    "doc": "npm run tsc && jsdoc2md js/**/*.js"
+    "tester": "npm run tsc && node js/src/tester.js"
   },
   "pkg": {
     "targets": [
@@ -55,7 +54,6 @@
     "chai": "^4.3.4",
     "eslint": "^7.24.0",
     "image-size": "^1.0.0",
-    "jsdoc-to-markdown": "^7.0.1",
     "mocha": "^8.3.2",
     "pkg": "^5.0.0",
     "ts-node": "^9.1.1",
