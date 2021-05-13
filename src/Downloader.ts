@@ -20,7 +20,7 @@ puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
  * Japscan downloader class, usually used with an interface
  */
 class Downloader {
-    WEBSITE = "https://www.japscan.se";
+    WEBSITE = "https://www.japscan.ws";
     browser!: Browser;
     outputDirectory!: string;
     onready: Promise<undefined>;
