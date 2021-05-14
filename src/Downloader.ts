@@ -120,8 +120,11 @@ class Downloader {
      * @param link link to go to
      * @returns a valid japscan page
      */
-    async goToExistingPage(link: string): Promise<Page> {
+    async goToExistingPage(link: string, script = false): Promise<Page> {
         const page = await this.browser.newPage();
+        if(script){
+            await page.evaluateOnNewDocument((await import(path.join(__dirname, "inject/inject.js"))).default);
+        }
         try {
             await page.goto(link, { timeout: this.timeout });
         } catch (e) {
@@ -303,25 +306,7 @@ class Downloader {
      */
     async downloadImageFromLink(link: string): Promise<boolean> {
         this.verbosePrint(console.log, "Téléchargement de l'image depuis le lien " + link);
-        const page = await this.goToExistingPage(link);
-
-        this.verbosePrint(console.log, "Injection du script");
-        await page.addScriptTag({
-            path: path.join(__dirname, "inject/inject.js"),
-        });
-
-        const popupCanvasSelector = "body > canvas";
-        try {
-            this.verbosePrint(console.log, "Attente du script de page...");
-            await page.waitForSelector(popupCanvasSelector, {
-                timeout: this.timeout,
-            });
-            this.verbosePrint(console.log, "Attente terminée");
-        } catch (e) {
-            console.log("Cette page n'a pas l'air d'avoir d'images");
-            await page.close();
-            return false;
-        }
+        const page = await this.goToExistingPage(link, true);
 
         const attributes = url.getAttributesFromLink(link);
 
@@ -332,6 +317,8 @@ class Downloader {
         );
         fsplus.createPath(savePath);
         savePath = path.posix.join(savePath, manga.getFilenameFrom(attributes));
+        const popupCanvasSelector = "body > canvas";
+        await page.waitForSelector(popupCanvasSelector);
         const canvasElement = await page.$(popupCanvasSelector);
         let dimensions = await canvasElement?.evaluate((el) => {
             const width = el.getAttribute("width");
@@ -693,6 +680,19 @@ class Downloader {
                 path: path.join(process.cwd(), "manga", "solo-leveling-" + id + ".jpg"),
             });
         }
+    }
+    async testFn(link: string): Promise<void> {
+        const page = await this.goToExistingPage(link);
+        const popupCanvasSelector = '#image > a > div > cnv-vv';
+        page.waitForSelector(popupCanvasSelector);
+        const cnvv = await page.$('#image > a > div > cnv-vv');
+        if(!cnvv) throw "No cnvv";
+        const inner = await cnvv.evaluate((cnvv) => {
+            document.body.appendChild(cnvv);
+            document.querySelectorAll('div').forEach((div) => div.remove());
+            return cnvv.innerHTML;
+        });
+        console.log("inner:", inner);
     }
 }
 

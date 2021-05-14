@@ -117,17 +117,17 @@ describe("Fetch manga stats tests", function () {
     });
     it("Fetchs one-piece volume 97 chapters", function () {
         const supposedResults = [
-            "https://www.japscan.se/lecture-en-ligne/one-piece/976/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/977/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/978/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/979/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/980/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/981/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/982/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/983/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/984/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/985/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/986/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/976/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/977/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/978/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/979/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/980/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/981/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/982/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/983/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/984/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/985/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/986/",
         ];
         return new Promise((resolve, reject) => {
             const supposedResultsString = supposedResults.toString();
@@ -150,7 +150,7 @@ describe("Fetch manga stats tests", function () {
         return new Promise((resolve, reject) => {
             downloader
                 .fetchNumberOfPagesInChapter(
-                    "https://www.japscan.se/lecture-en-ligne/one-piece/1000/"
+                    downloader.WEBSITE + "/lecture-en-ligne/one-piece/1000/"
                 )
                 .then((numberOfPages) => {
                     if (supposedResult !== numberOfPages) {
@@ -167,13 +167,13 @@ describe("Fetch manga stats tests", function () {
     });
     it("Fetchs range between one-piece 1000 and 1005", function () {
         const supposedLinks = [
-            "https://www.japscan.se/lecture-en-ligne/one-piece/1000/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/1000.5/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/1001/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/1002/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/1003/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/1004/",
-            "https://www.japscan.se/lecture-en-ligne/one-piece/1005/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1000/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1000.5/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1001/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1002/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1003/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1004/",
+            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1005/",
         ];
         const supposedLinksToString = supposedLinks.toString();
         return new Promise((resolve, reject) => {
@@ -212,7 +212,7 @@ describe("japscan 404 tests", function () {
     it("Should throw because page is 404", function () {
         return new Promise((resolve, reject) => {
             downloader
-                .goToExistingPage("https://www.japscan.se/manga/one-piece")
+                .goToExistingPage(downloader.WEBSITE + "/manga/one-piece")
                 .catch((error) => reject(error));
             resolve(undefined);
         });
@@ -220,7 +220,7 @@ describe("japscan 404 tests", function () {
     it("Should not throw because page exists", function () {
         return new Promise((resolve, reject) => {
             downloader
-                .goToExistingPage("https://www.japscan.se/manga/one-piece/")
+                .goToExistingPage(downloader.WEBSITE + "/manga/one-piece/")
                 .catch((error) => reject(error));
             resolve(undefined);
         });

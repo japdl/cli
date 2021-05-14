@@ -16,11 +16,13 @@ const zipper = {
             mangaNumber,
             mangaType
         );
-        await zipper.zipDirectories(
+        const infos = await zipper.zipDirectories(
             directories,
             cbrName
-        ).then((infos) => console.log("Cbr terminé! Il est enregistré à l'endroit " + infos.filename + " (" + bytesToSize(infos.archive.pointer()) + ")"))
-            .catch((e) => console.log("Erreur pendant la création du cbr (" + cbrName + "):", e));
+        )
+        .catch((e) => console.log("Erreur pendant la création du cbr (" + cbrName + "):", e));
+        if(!infos) throw new Error("Quelque chose s'est mal passé pendant la création du cbr");
+        console.log("Cbr terminé! Il est enregistré à l'endroit " + infos.filename + " (" + bytesToSize(infos.archive.pointer()) + ")");
     },
     /**
      * @param {String[]} source is an array of path
