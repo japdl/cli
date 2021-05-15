@@ -295,7 +295,7 @@ class Downloader {
         }
 
         if (compression) {
-            zipper.safeZip(this, startAttributes.manga, "chapitre", startAttributes.chapter, [this.getPathFrom(startAttributes)]);
+            await zipper.safeZip(this, startAttributes.manga, "chapitre", startAttributes.chapter, [this.getPathFrom(startAttributes)]);
         }
         return this.getPathFrom(startAttributes);
     }
@@ -452,7 +452,7 @@ class Downloader {
             }
         }
         if (compression) {
-            zipper.safeZip(this, mangaName, "volume", volumeNumber.toString(), downloadLocations);
+            await zipper.safeZip(this, mangaName, "volume", volumeNumber.toString(), downloadLocations);
         }
         return downloadLocations;
     }
