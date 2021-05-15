@@ -318,7 +318,18 @@ class Downloader {
         fsplus.createPath(savePath);
         savePath = path.posix.join(savePath, manga.getFilenameFrom(attributes));
         const popupCanvasSelector = "body > canvas";
-        await page.waitForSelector(popupCanvasSelector);
+        try {
+            this.verbosePrint(console.log, "Attente du script de page...");
+            await page.waitForSelector(popupCanvasSelector, {
+                timeout: this.timeout,
+            });
+            this.verbosePrint(console.log, "Attente terminée");
+        } catch (e) {
+            console.log("Cette page n'a pas l'air d'avoir d'images");
+            await page.close();
+            return false;
+        }
+
         const canvasElement = await page.$(popupCanvasSelector);
         let dimensions = await canvasElement?.evaluate((el) => {
             const width = el.getAttribute("width");
@@ -622,7 +633,7 @@ class Downloader {
 
         if (chapterSelect === null) {
             throw new Error(
-                "Pas pu récup select scroll, Japdl n'a pas pu déterminer le nombre de pages dans le chapitre du lien " +
+                "Japdl n'a pas pu déterminer le nombre de pages dans le chapitre (menu déroulant) du lien " +
                 link
             );
         }
@@ -680,19 +691,6 @@ class Downloader {
                 path: path.join(process.cwd(), "manga", "solo-leveling-" + id + ".jpg"),
             });
         }
-    }
-    async testFn(link: string): Promise<void> {
-        const page = await this.goToExistingPage(link);
-        const popupCanvasSelector = '#image > a > div > cnv-vv';
-        page.waitForSelector(popupCanvasSelector);
-        const cnvv = await page.$('#image > a > div > cnv-vv');
-        if(!cnvv) throw "No cnvv";
-        const inner = await cnvv.evaluate((cnvv) => {
-            document.body.appendChild(cnvv);
-            document.querySelectorAll('div').forEach((div) => div.remove());
-            return cnvv.innerHTML;
-        });
-        console.log("inner:", inner);
     }
 }
 
