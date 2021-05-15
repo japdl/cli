@@ -120,8 +120,11 @@ class Downloader {
      * @param link link to go to
      * @returns a valid japscan page
      */
-    async goToExistingPage(link: string): Promise<Page> {
+    async goToExistingPage(link: string, script = false): Promise<Page> {
         const page = await this.browser.newPage();
+        if(script){
+            await page.evaluateOnNewDocument((await import(path.join(__dirname, "inject/inject.js"))).default);
+        }
         try {
             await page.goto(link, { timeout: this.timeout });
         } catch (e) {
@@ -303,13 +306,17 @@ class Downloader {
      */
     async downloadImageFromLink(link: string): Promise<boolean> {
         this.verbosePrint(console.log, "Téléchargement de l'image depuis le lien " + link);
-        const page = await this.goToExistingPage(link);
+        const page = await this.goToExistingPage(link, true);
 
-        this.verbosePrint(console.log, "Injection du script");
-        await page.addScriptTag({
-            path: path.join(__dirname, "inject/inject.js"),
-        });
+        const attributes = url.getAttributesFromLink(link);
 
+        let savePath = path.posix.join(
+            this.outputDirectory,
+            attributes.manga,
+            attributes.chapter
+        );
+        fsplus.createPath(savePath);
+        savePath = path.posix.join(savePath, manga.getFilenameFrom(attributes));
         const popupCanvasSelector = "body > canvas";
         try {
             this.verbosePrint(console.log, "Attente du script de page...");
@@ -323,15 +330,6 @@ class Downloader {
             return false;
         }
 
-        const attributes = url.getAttributesFromLink(link);
-
-        let savePath = path.posix.join(
-            this.outputDirectory,
-            attributes.manga,
-            attributes.chapter
-        );
-        fsplus.createPath(savePath);
-        savePath = path.posix.join(savePath, manga.getFilenameFrom(attributes));
         const canvasElement = await page.$(popupCanvasSelector);
         let dimensions = await canvasElement?.evaluate((el) => {
             const width = el.getAttribute("width");
@@ -635,7 +633,7 @@ class Downloader {
 
         if (chapterSelect === null) {
             throw new Error(
-                "Pas pu récup select scroll, Japdl n'a pas pu déterminer le nombre de pages dans le chapitre du lien " +
+                "Japdl n'a pas pu déterminer le nombre de pages dans le chapitre (menu déroulant) du lien " +
                 link
             );
         }
