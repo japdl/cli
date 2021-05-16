@@ -50,12 +50,12 @@ class Downloader {
             for (const option of Object.entries(options)) {
                 // this[options[0]] becomes this.onPage, this.onChapter and this.onVolume
                 // option[1] is the function given
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 this[option[0]] = option[1];
             }
         }
-
+        const a = +(1===1)
+        console.log(a);
         // flags
         const flags = yargs(process.argv.slice(2))
             .option("v", { alias: "verbose", boolean: true, default: false })
@@ -92,7 +92,8 @@ class Downloader {
                 .catch((e) => {
                     if (e.toString().includes("FetchError")) {
                         reject(
-                            "Une erreur s'est produite, vérifiez que vous avez bien une connexion internet"
+                            "Une erreur s'est produite, vérifiez que vous avez bien une connexion internet" +
+                            ", erreur complète:\n" + e
                         );
                     } else if (e.toString().includes("EACCES")) {
                         reject(
@@ -100,7 +101,7 @@ class Downloader {
                             this.chromePath +
                             " ne peut pas être lancé: japdl n'a pas les permissions. Cela est dû à un manque de permission. Sur linux, la solution peut être: 'chmod 777 " +
                             this.chromePath +
-                            "'"
+                            "', erreur complète:\n" + e
                         );
                     } else if (e.toString().includes("ENOENT")) {
                         reject(

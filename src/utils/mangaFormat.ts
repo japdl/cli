@@ -2,7 +2,6 @@ const acceptedFormats = ["volume", "chapitre"];
 function returnFullFormat(_format: string): "volume" | "chapitre" | false {
     for(const format of acceptedFormats){
         if(format.startsWith(_format)){
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             //@ts-ignore
             return format;
         }

@@ -16,7 +16,6 @@ const flags = yargs(process.argv.slice(2))
     for (const platform of platforms) {
         const fetcher = puppeteer.createBrowserFetcher({ platform: platform, path: path.resolve(".local-chromium/") })
         if (fetcher.canDownload(revision)) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             //@ts-ignore
             console.log(fetcher._getFolderPath(revision));
             console.log("Can download")
