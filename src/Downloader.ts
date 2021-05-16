@@ -58,20 +58,20 @@ class Downloader {
         console.log(a);
         // flags
         const flags = yargs(process.argv.slice(2))
-            .option("v", { alias: "verbose", boolean: true, default: false })
-            .option("h", { alias: "headless", boolean: true, default: false })
-            .option("f", { alias: "fast", boolean: true, default: false })
-            .option("t", { alias: "timeout", number: true, default: 60 }).argv;
+            .option("verbose", { alias: "v", boolean: true, default: false })
+            .option("headless", { alias: "h", boolean: true, default: false })
+            .option("fast", { alias: "f", boolean: true, default: false })
+            .option("timeout", { alias: "t", number: true, default: 60 }).argv;
 
         if (flags.f) {
             console.log(
                 "Attention! Le flag 'fast' est activé. Le programme ne garantit plus de récupérer toutes les images des chapitres. Une bonne connexion et un bon ordinateur est très fortement recommandé pour l'utilisation de ce flag. Dans le cas contraire, des images pourraient manquer."
             );
         }
-        this.verbose = flags.v;
-        const headless = !flags.h;
-        this.fast = flags.f;
-        this.timeout = flags.t * 1000;
+        this.verbose = flags.verbose;
+        const headless = !flags.headless;
+        this.fast = flags.fast;
+        this.timeout = flags.timeout * 1000;
 
         // config variables
         const configVariables = config.getConfigVariables();
