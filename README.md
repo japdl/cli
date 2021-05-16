@@ -5,12 +5,11 @@ Japdl est un programme pour télécharger les mangas de japscan. Pour l'instant,
 [Par ici pour la dernière version](https://github.com/Seysa/japdl/releases "Dernière version")
 
 ## Installation
-Dézipper l'archive `japdl` téléchargée. Vous trouverez à l'intérieur `japdl-win.exe` sur windows et `japdl-linux`.
+Dézipper l'archive `japdl` téléchargée. Vous trouverez à l'intérieur `japdl-win.exe` sur windows et `japdl-linux` sur linux.
 
 Le programme n'a besoin que de chrome/chromium/edge pour fonctionner. Si vous avez téléchargé la version normale (avec chrome), le programme devrait marcher sans installation supplémentaire.
 
-Si vous avez téléchargé l'autre version ou que vous ne voulez plus de chrome (dans le dossier .local-chromium/), alors vous pouvez spécifier le chemin de votre chrome dans un fichier `config.txt`.
-il faut lui donner dans un fichier `config.txt` placé à côté du programme `japdl`.
+Si vous avez téléchargé l'autre version ou que vous ne voulez plus de chrome (dans le dossier .local-chromium/), alors vous pouvez spécifier le chemin de votre chrome dans un fichier `config.txt` qui doit être placé à côté du programme.
 Un exemple de `config.txt`:
 ```txt
 # Les commentaires s'écrivent avec un '#' devant
@@ -22,9 +21,9 @@ output_dir=manga
 ```
 
 ## Lancement avec options
-Cette section n'est pas nécessaire au bon fonctionnement du programme.
+### Cette section n'est pas nécessaire au bon fonctionnement du programme.
 
-Le programme peut se lancer avec des options, permettant d'activer des options spécifiques. Pour l'instant, les options sont:
+Le programme peut se lancer avec des "flags", permettant d'activer des options spécifiques. Pour l'instant, ces flags sont:
 
 1. `-h | --headless` : Permet de voir le navigateur télécharger en direct sur japscan. Par défaut, le navigateur est caché.
 2. `-v | --verbose` : Permet d'avoir plus de messages dans la console pour mieux comprendre le fonctionnement.
