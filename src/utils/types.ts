@@ -28,4 +28,14 @@ export type DownloaderOnPage =
 
 export type DownloaderOnChapter = (attributes: MangaAttributes, currentChapter: number, totalChapters: number) => void;
 
-export type DownloaderOnVolume = (mangaName: string, current:number, total:number) => void;
+export type DownloaderOnVolume = (mangaName: string, current: number, total: number) => void;
+
+export type ComponentFlags = {
+    [x: string]: unknown;
+    verbose: boolean;
+    headless: boolean;
+    fast: boolean;
+    timeout: number;
+    _: (string | number)[];
+    $0: string;
+}
