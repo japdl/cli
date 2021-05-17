@@ -1,21 +1,16 @@
+import { Browser } from "puppeteer";
 import readline from "readline";
 import Downloader from "./Downloader";
-import commands from "./utils/commands";
-import { MangaAttributes } from "./utils/types";
+import commands from "../utils/commands";
+import flags from "../utils/flags";
+import { CLICommand, MangaAttributes } from "../utils/types";
 /**
  * Interface implementation for downloader
  */
 class CLInterface extends Downloader {
     rl: readline.Interface;
     downloader!: Downloader;
-    commands: Promise<Record<string, {
-        description: string;
-        usage: string;
-        aliases: string[];
-        example: string[];
-        argsNeeded: number;
-        execute(inter: CLInterface, args: string[]): Promise<void>;
-    }>>;
+    commands: Promise<Record<string, CLICommand>>;
     commandsKeys: string[];
 
     /**
@@ -23,7 +18,7 @@ class CLInterface extends Downloader {
      * creates readline interface,
      * get commands from files in commands/
      */
-    constructor() {
+    constructor(browser: Browser) {
         const basicOptions = {
             onPage: (
                 attributes: MangaAttributes,
@@ -33,13 +28,13 @@ class CLInterface extends Downloader {
                 const { manga, chapter } = attributes;
                 const percent = ((currentPage / totalPages) * 100).toFixed(2);
                 let message = `${manga} ${chapter} page ${currentPage}/${totalPages} (${percent}%)`;
-                const k = 20; // bar width
-                const cur = Math.floor((currentPage / totalPages) * k);
-                message = `${message}  [${"=".repeat(cur)}${" ".repeat(k - cur)}]`
+                const barWidth = 50; // bar width
+                const currentlyDownloadedScaled = Math.floor((currentPage / totalPages) * barWidth);
+                message = `${message}  [${"=".repeat(currentlyDownloadedScaled)}${" ".repeat(barWidth - currentlyDownloadedScaled)}]`
                 readline.cursorTo(process.stdout, 0);
                 process.stdout.write(message);
                 // if at the end, new line
-                if (currentPage === totalPages) process.stdout.write("\n");
+                if (currentPage === totalPages || this.verbose) process.stdout.write("\n");
             },
             onChapter: (attributes: MangaAttributes, currentChapter: number, totalChapters: number) => {
                 const { manga, chapter } = attributes;
@@ -51,7 +46,11 @@ class CLInterface extends Downloader {
                 console.log(`${mangaName} volume ${current}/${total} (${percent}%)`);
             }
         }
-        super(basicOptions);
+        super(browser, flags.getFlags(), basicOptions);
+        browser.on('disconnected', () => {
+            console.log("Le navigateur a été fermé, arrêt du programme");
+            this.quit();
+        });
         this.rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
@@ -64,13 +63,13 @@ class CLInterface extends Downloader {
     /**
      * Starts reading commands from terminal
      */
-     handleInput(): void {
+    handleInput(): void {
         this.rl.on('line', (line) => this.readCommands(line));
     }
     /**
      * Stops reading commands from terminal
      */
-     closeInput(): void {
+    closeInput(): void {
         this.rl.removeAllListeners();
     }
     /**
@@ -150,7 +149,7 @@ class CLInterface extends Downloader {
     /**
      * Starts interface
      */
-     start(): void {
+    start(): void {
         this.dynamicDisplayHelp().then(() => {
             this.printSeparator();
             this.handleInput();
@@ -160,7 +159,7 @@ class CLInterface extends Downloader {
     /**
      * Quit program after destroying downloader and readline interface
      */
-     async quit(): Promise<void> {
+    async quit(): Promise<void> {
         console.log("Merci d'avoir utilisé japdl!");
         this.closeInput();
         this.rl.close();

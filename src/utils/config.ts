@@ -12,9 +12,6 @@ const config = {
                 .readFileSync("./config.txt", { encoding: "utf-8" })
                 .split(/\n+/);
         } catch (e) {
-            console.log(
-                "Fichier config.txt non trouvé, les paramètres de base vont être appliqués."
-            );
             return { chromePath: chrome.getChromePath(), outputDirectory: "manga" };
         }
         let chromePath = "";

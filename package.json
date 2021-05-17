@@ -10,7 +10,7 @@
   "scripts": {
     "start": "npm run tsc && node .",
     "build": "npm run tsc && pkg .",
-    "test": "npm run tsc && mocha js/test/download.js --exit",
+    "test": "npm run tsc && mocha js/test/ --recursive --exit",
     "tsc": "tsc",
     "download": "npm run tsc && node js/src/utils/chromiumDownloader.js",
     "downloadtest": "npm run tsc && node js/src/utils/chromiumDownloader.js --testing",

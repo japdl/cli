@@ -1,5 +1,6 @@
 import fs from "fs";
-import CLInterface from "../CLIInterface";
+import CLInterface from "../components/CLIInterface";
+
 import { MangaAttributes } from "./types";
 import url from "./url";
 

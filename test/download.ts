@@ -1,228 +1,109 @@
-import Downloader from "../src/Downloader";
 import fs from "fs";
 import path from "path";
 import sizeOf from "image-size";
+import getBrowser from "../src/utils/browser";
+import config from "../src/utils/config";
+import flags from "../src/utils/flags";
+import Downloader from "../src/components/Downloader";
 
 let downloader: Downloader;
 
+const mangaToDownload = "one-piece";
+const chapterToDownload = 998;
+const numberOfPages = 11;
+
 describe("Downloader tests", function () {
-    it("Downloader instantiation", function () {
+    it("Browser instantiation", async function () {
         this.timeout(0);
-        downloader = new Downloader({onPage: (attributes, current, total) => console.log(`${attributes.manga} ${attributes.chapter} ${current}/${total}`)});
-        return downloader.onready;
-    });
-});
-describe("Downloading one-piece chapter 999", function () {
-    it("download one piece chapter 999", function () {
-        this.timeout(1000 * 60 * 5); // 5 minutes
-        return new Promise((resolve, reject) => {
-            downloader
-                .downloadChapter("one-piece", 999)
-                .then(() => resolve(undefined))
-                .catch((error) => reject(error));
+        const configVariables = config.getConfigVariables();
+        const browser = await getBrowser(false, configVariables.chromePath);
+        const f = flags.getFlags();
+        downloader = new Downloader(browser, f, {
+            onPage: (attributes, currentPage, totalPages) => {
+                const { manga, chapter } = attributes;
+                console.log(`${manga} ${chapter} ${currentPage}/${totalPages}`);
+            }
         });
     });
-    it("number of open chrome pages must be all about:blank", async function () {
-        return new Promise(function (resolve, reject) {
-            downloader.browser.pages().then((pages) => {
-                const pagesUrl: string[] = [];
-                pages.forEach((page) => pagesUrl.push(page.url()));
-                const pagesThatAreNotBlank = pagesUrl.filter(
-                    (url) => url !== "about:blank"
-                );
-                if (pagesThatAreNotBlank.length) {
-                    reject("Some pages are not closed:" + pagesThatAreNotBlank);
-                } else {
-                    resolve();
-                }
-            });
-        });
-    });
-    it("folder one-piece/999 must exist", function () {
-        const folderPath = path.join(
-            downloader.outputDirectory,
-            "one-piece",
-            "999"
-        );
-        if (!fs.existsSync(folderPath)) {
-            throw new Error(
-                "Folder " + folderPath + " was not created after download"
-            );
-        }
-    });
-    it("downloaded One Piece must have 16 pages", function () {
-        const downloadedAt = path.join(
-            downloader.outputDirectory,
-            "one-piece",
-            "999"
-        );
-        const numberOfImages = fs.readdirSync(downloadedAt).length;
-        if (numberOfImages !== 16) {
-            throw new Error(
-                "There must be 16 images, " + numberOfImages + " were found"
-            );
-        }
-    });
-    it("cbr must have been created", function () {
-        const cbrName = downloader.getCbrFrom("one-piece", "999", "chapitre");
-        if (!fs.existsSync(cbrName)) {
-            throw new Error("cbr was not created at " + cbrName);
-        }
-    });
-    it("Page 13 must have correct size", function () {
-        const { height, width } = sizeOf(
-            path.join(__dirname, "../../manga/one-piece/999/999_13.jpg")
-        );
-        const supposedHeight = 1300;
-        const supposedWidth = 1769;
-        const errors: string[] = [];
-        if (height !== supposedHeight) {
-            errors.push(
-                `height is wrong, current: ${height}, supposed: ${supposedHeight}`
-            );
-        }
-        if (width !== supposedWidth) {
-            errors.push(
-                `width is wrong, current: ${width}, supposed: ${supposedWidth}`
-            );
-        }
-        if (errors.length) {
-            throw new Error(errors.join("\n"));
-        }
-    });
-});
-describe("Fetch manga stats tests", function () {
-    this.timeout(0);
-    it("Fetchs nanatsu-no-taizai volumes, name and chapters", function () {
-        const supposedResults = {
-            volumes: 41,
-            chapters: 347,
-            name: "nanatsu-no-taizai",
-        };
-        return new Promise((resolve, reject) => {
-            downloader.fetchStats("nanatsu-no-taizai").then((infos) => {
-                const supposedResultsString = JSON.stringify(supposedResults);
-                const infosString = JSON.stringify(infos);
-                if (supposedResultsString !== infosString) {
-                    reject(
-                        "Wrong fetch. Supposed: " +
-                        supposedResultsString +
-                        "\nGot: " +
-                        infosString
+    describe(`Downloading ${mangaToDownload} chapter ${chapterToDownload}`, function () {
+        this.afterEach("number of open chrome pages must be all about:blank", async function () {
+            return new Promise(function (resolve, reject) {
+                downloader.browser.pages().then((pages) => {
+                    const pagesUrl: string[] = [];
+                    pages.forEach((page) => pagesUrl.push(page.url()));
+                    const pagesThatAreNotBlank = pagesUrl.filter(
+                        (url) => url !== "about:blank"
                     );
-                }
-                resolve(undefined);
-            });
-        });
-    });
-    it("Fetchs one-piece volume 97 chapters", function () {
-        const supposedResults = [
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/976/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/977/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/978/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/979/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/980/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/981/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/982/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/983/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/984/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/985/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/986/",
-        ];
-        return new Promise((resolve, reject) => {
-            const supposedResultsString = supposedResults.toString();
-            downloader.fetchVolumeChapters(97, "one-piece").then((chapters) => {
-                const chaptersToString = chapters.toString();
-                if (chaptersToString !== supposedResultsString) {
-                    reject(
-                        "Wrong fetch. Supposed: " +
-                        supposedResultsString +
-                        "\nGot: " +
-                        chaptersToString
-                    );
-                }
-                resolve(undefined);
-            });
-        });
-    });
-    it("Fetchs one-piece chapter 999 pages", function () {
-        const supposedResult = 15;
-        return new Promise((resolve, reject) => {
-            downloader
-                .fetchNumberOfPagesInChapter(
-                    downloader.WEBSITE + "/lecture-en-ligne/one-piece/1000/"
-                )
-                .then((numberOfPages) => {
-                    if (supposedResult !== numberOfPages) {
-                        reject(
-                            "Wrong fetch. Supposed: " +
-                            supposedResult +
-                            "\nGot: " +
-                            numberOfPages
-                        );
-                    }
-                    resolve(undefined);
-                });
-        });
-    });
-    it("Fetchs range between one-piece 1000 and 1005", function () {
-        const supposedLinks = [
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1000/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1000.5/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1001/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1002/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1003/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1004/",
-            downloader.WEBSITE + "/lecture-en-ligne/one-piece/1005/",
-        ];
-        const supposedLinksToString = supposedLinks.toString();
-        return new Promise((resolve, reject) => {
-            downloader
-                .fetchChapterLinksBetweenRange("one-piece", 1000, 1005)
-                .then((links) => {
-                    const linksToString = links.toString();
-                    if (linksToString !== supposedLinksToString) {
-                        reject(
-                            "Wrong fetch. Supposed: " +
-                            supposedLinksToString +
-                            "\nGot: " +
-                            linksToString
-                        );
+                    if (pagesThatAreNotBlank.length) {
+                        reject("Some pages are not closed:" + pagesThatAreNotBlank.join('\n'));
                     } else {
-                        resolve(undefined);
+                        resolve();
                     }
                 });
+            });
+        });
+        it(`download ${mangaToDownload} chapter ${chapterToDownload}`, function () {
+            this.timeout(1000 * 60 * 5); // 5 minutes
+            return new Promise((resolve, reject) => {
+                downloader
+                    .downloadChapter(mangaToDownload, chapterToDownload)
+                    .then(() => resolve(undefined))
+                    .catch((error) => reject(error));
+            });
+        });
+        it(`folder ${mangaToDownload}/${chapterToDownload} must exist`, function () {
+            const folderPath = path.join(
+                downloader.outputDirectory,
+                mangaToDownload,
+                chapterToDownload.toString()
+            );
+            if (!fs.existsSync(folderPath)) {
+                throw new Error(
+                    "Folder " + folderPath + " was not created after download"
+                );
+            }
+        });
+        it(`downloaded One Piece must have ${numberOfPages} pages`, function () {
+            const downloadedAt = path.join(
+                downloader.outputDirectory,
+                "one-piece",
+                "998"
+            );
+            const numberOfImages = fs.readdirSync(downloadedAt).length;
+            if (numberOfImages !== numberOfPages) {
+                throw new Error(
+                    "There must be " + numberOfPages + " images, " + numberOfImages + " were found"
+                );
+            }
+        });
+        it("cbr must have been created", function () {
+            const cbrName = downloader.getCbrFrom(mangaToDownload, chapterToDownload.toString(), "chapitre");
+            if (!fs.existsSync(cbrName)) {
+                throw new Error("cbr was not created at " + cbrName);
+            }
+        });
+        const pageToCheck = 4;
+        it(`Page ${pageToCheck} must have correct size`, function () {
+            const { height, width } = sizeOf(
+                path.join(__dirname, `../../manga/one-piece/${chapterToDownload}/${chapterToDownload}_${pageToCheck}.jpg`)
+            );
+            const supposedHeight = 1300;
+            const supposedWidth = 1790;
+            const errors: string[] = [];
+            if (height !== supposedHeight) {
+                errors.push(
+                    `height is wrong, current: ${height}, supposed: ${supposedHeight}`
+                );
+            }
+            if (width !== supposedWidth) {
+                errors.push(
+                    `width is wrong, current: ${width}, supposed: ${supposedWidth}`
+                );
+            }
+            if (errors.length) {
+                throw new Error(errors.join("\n"));
+            }
         });
     });
-    it("Should throw because range is invalid", function () {
-        return new Promise((resolve, reject) => {
-            downloader
-                .fetchChapterLinksBetweenRange("one-piece", 1005, 1004)
-                .then((links) =>
-                    reject(
-                        "Was supposed to throw because invalid, got links: " +
-                        links.toString()
-                    )
-                )
-                .catch((error) => resolve(error));
-        });
-    });
-});
-describe("japscan 404 tests", function () {
-    it("Should throw because page is 404", function () {
-        return new Promise((resolve, reject) => {
-            downloader
-                .goToExistingPage(downloader.WEBSITE + "/manga/one-piece")
-                .catch((error) => reject(error));
-            resolve(undefined);
-        });
-    });
-    it("Should not throw because page exists", function () {
-        return new Promise((resolve, reject) => {
-            downloader
-                .goToExistingPage(downloader.WEBSITE + "/manga/one-piece/")
-                .catch((error) => reject(error));
-            resolve(undefined);
-        });
-    });
+
 });
