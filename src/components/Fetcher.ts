@@ -1,13 +1,11 @@
-import { Browser, Page } from "puppeteer";
+import { Browser } from "puppeteer";
 import Component from "./Component";
-import { ComponentFlags, MangaInfos } from "./utils/types";
-import url from "./utils/url";
+import { ComponentFlags, MangaInfos } from "../utils/types";
+import url from "../utils/url";
 
 class Fetcher extends Component {
-    constructor(browser: Browser, parameters: ComponentFlags & {
-        outputDirectory: string;
-    }){
-        super(browser, parameters);
+    constructor(browser: Browser, flags: ComponentFlags, outputDirectory = "manga"){
+        super(browser, flags, outputDirectory);
     }
     /**
      *
@@ -16,12 +14,11 @@ class Fetcher extends Component {
      * @returns manga stats
      */
     async fetchStats(
-        mangaName: string,
-        _page?: Page
+        mangaName: string
     ): Promise<MangaInfos> {
         this.verbosePrint(console.log, "Récupération des infos du manga " + mangaName);
         const link = url.joinJapscanURL(this.WEBSITE, "manga", mangaName);
-        const page = _page || (await this.goToExistingPage(link));
+        const page = await this.createExistingPage(link);
         const pageMangaName = url.getAttributesFromLink(page.url()).manga;
         const chapterList = await page.$("#chapters_list");
         const volumes = await chapterList?.$$("h4");
@@ -48,10 +45,8 @@ class Fetcher extends Component {
                 mangaName
             );
         }
-        if (!_page) {
-            page.close();
-        }
         const chapter = url.getAttributesFromLink(lastChapterLink).chapter;
+        page.close();
         return {
             volumes: volumes?.length,
             chapters: +chapter,
@@ -76,9 +71,9 @@ class Fetcher extends Component {
         );
         const link = url.joinJapscanURL(this.WEBSITE, "manga", mangaName);
 
-        const page = await this.goToExistingPage(link);
+        const page = await this.createExistingPage(link);
         const chapterList = await page.$("#chapters_list");
-        const numberOfVolumes = (await this.fetchStats(mangaName, page)).volumes;
+        const numberOfVolumes = (await this.fetchStats(mangaName)).volumes;
 
         if (volumeNumber > numberOfVolumes || volumeNumber <= 0) {
             throw new Error(
@@ -137,7 +132,7 @@ class Fetcher extends Component {
             );
         }
         const link = url.joinJapscanURL(this.WEBSITE, "manga", mangaName);
-        const page = await this.goToExistingPage(link);
+        const page = await this.createExistingPage(link);
         const linksToChapters = await page.evaluate(() => {
             const allElements = <NodeListOf<HTMLAnchorElement>>(
                 document.querySelectorAll("#chapters_list > .collapse > div > a")
@@ -168,7 +163,7 @@ class Fetcher extends Component {
         this.verbosePrint(console.log,
             "Recupération du nombre de pages pour le chapitre " + link
         );
-        const startPage = await this.goToExistingPage(link);
+        const startPage = await this.createExistingPage(link);
         const chapterSelectSelector =
             "div.div-select:nth-child(2) > .ss-main > .ss-content > .ss-list";
         try {

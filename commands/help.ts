@@ -1,4 +1,4 @@
-import CLInterface from "../src/CLIInterface";
+import CLInterface from "../src/components/CLIInterface";
 
 module.exports = {
     description: "Affiche l'aide",

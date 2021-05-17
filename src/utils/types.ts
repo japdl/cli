@@ -1,4 +1,4 @@
-import CLInterface from "../CLIInterface";
+import CLInterface from "../components/CLIInterface";
 
 export interface MangaAttributes {
     manga: string;
@@ -31,11 +31,8 @@ export type DownloaderOnChapter = (attributes: MangaAttributes, currentChapter: 
 export type DownloaderOnVolume = (mangaName: string, current: number, total: number) => void;
 
 export type ComponentFlags = {
-    [x: string]: unknown;
     verbose: boolean;
     headless: boolean;
     fast: boolean;
     timeout: number;
-    _: (string | number)[];
-    $0: string;
 }

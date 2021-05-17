@@ -1,4 +1,4 @@
-import CLInterface from "../src/CLIInterface";
+import CLInterface from "../src/components/CLIInterface";
 import fsplus from "../src/utils/fsplus";
 import manga from "../src/utils/manga";
 import mangaFormat from "../src/utils/mangaFormat";

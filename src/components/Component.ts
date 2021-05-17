@@ -1,7 +1,7 @@
 import { Browser, Page } from "puppeteer";
 import path from "path";
-import { ComponentFlags, MangaAttributes } from "./utils/types";
-import url from "./utils/url";
+import { ComponentFlags, MangaAttributes } from "../utils/types";
+import url from "../utils/url";
 
 class Component {
     WEBSITE = "https://www.japscan.ws";
@@ -11,12 +11,11 @@ class Component {
     timeout: number;
     outputDirectory: string;
 
-    constructor(browser: Browser, parameters: ComponentFlags & {outputDirectory: string})
-    {
-        this.outputDirectory = parameters.outputDirectory;
-        this.verbose = parameters.verbose;
-        this.fast = parameters.fast;
-        this.timeout = parameters.timeout * 1000;
+    constructor(browser: Browser, flags: ComponentFlags, outputDirectory = "manga") {
+        this.outputDirectory = outputDirectory;
+        this.verbose = flags.verbose;
+        this.fast = flags.fast;
+        this.timeout = flags.timeout * 1000;
         this.browser = browser;
     }
 
@@ -24,21 +23,30 @@ class Component {
      * @param link link to go to
      * @returns a valid japscan page
      */
-     async goToExistingPage(link: string, script = false): Promise<Page> {
+    async createExistingPage(link: string, script = false): Promise<Page> {
         const page = await this.browser.newPage();
-        if(script){
-            await page.evaluateOnNewDocument((await import(path.join(__dirname, "inject/inject.js"))).default);
+        this.verbosePrint(console.log, "Création de la page " + link + ((script) ? " avec un script" : ""));
+        await this.goToExistingPage(page, link, script);
+        return page;
+    }
+
+    protected async goToExistingPage(page: Page, link: string, script = false): Promise<void> {
+        if (script) {
+            await page.evaluateOnNewDocument((await import(path.join(__dirname, "../inject/inject.js"))).default);
         }
-        try {
-            await page.goto(link, { timeout: this.timeout });
-        } catch (e) {
-            return await this.goToExistingPage(link);
-        }
+        await this.safePageGoto(page, link);
         if (await this.isJapscan404(page)) {
             throw new Error("La page " + link + " n'existe pas (404)");
         }
         this.verbosePrint(console.log, "Création de la page " + link);
-        return page;
+    }
+
+    protected async safePageGoto(page: Page, link: string): Promise<void> {
+        try {
+            await page.goto(link, { timeout: this.timeout });
+        } catch (e) {
+            return this.safePageGoto(page, link);
+        }
     }
 
     /**
@@ -64,9 +72,7 @@ class Component {
      * @returns path to manga without filename
      */
     getPathFrom(
-        param:
-            | string
-            | MangaAttributes
+        param: string | MangaAttributes
     ): string {
         if (typeof param === "string") {
             return this.getPathFrom(url.getAttributesFromLink(param));
@@ -90,7 +96,7 @@ class Component {
      * @param printFunction function used to print msg param
      * @param msg msg param to print
      */
-     verbosePrint(printFunction: unknown, ...msg: unknown[]): void {
+    protected verbosePrint(printFunction: unknown, ...msg: unknown[]): void {
         if (this.verbose) {
             if (printFunction instanceof Function) {
                 printFunction(...msg);
