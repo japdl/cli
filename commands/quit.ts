@@ -1,4 +1,4 @@
-import CLInterface from "../src/components/CLIInterface";
+import CLInterface from "../src/components/CLInterface";
 
 module.exports = {
     description: "Quitte le programme",

@@ -1,5 +1,5 @@
 import fs from "fs";
-import CLInterface from "../src/components/CLIInterface";
+import CLInterface from "../src/components/CLInterface";
 
 module.exports = {
     description: "Charge un fichier donné après la commande et execute les commandes à l'intérieur",

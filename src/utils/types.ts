@@ -1,4 +1,4 @@
-import CLInterface from "../components/CLIInterface";
+import CLInterface from "../components/CLInterface";
 
 export interface MangaAttributes {
     manga: string;

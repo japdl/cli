@@ -1,5 +1,5 @@
 import japscandl from "japscandl";
-import CLInterface from "./src/components/CLIInterface";
+import CLInterface from "./src/components/CLInterface";
 import config from "./src/utils/config";
 import flags from "./src/utils/flags";
 

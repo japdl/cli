@@ -1,4 +1,4 @@
-import CLInterface from "../src/components/CLIInterface";
+import CLInterface from "../src/components/CLInterface";
 
 module.exports = {
     description: "Donne le nombre de volumes et de chapitres du manga donné en paramètre, s'il est possible de récupérer cette information.",
