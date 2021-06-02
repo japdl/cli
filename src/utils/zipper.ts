@@ -1,6 +1,6 @@
 import archiver from "archiver";
 import fs from "fs";
-import Downloader from "../components/Downloader";
+import { Downloader } from "japscandl";
 
 const zipper = {
     async safeZip(downloader: Downloader, mangaName: string, mangaType: string, mangaNumber: string, directories: string[]): Promise<void> {

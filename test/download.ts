@@ -1,10 +1,10 @@
 import fs from "fs";
 import path from "path";
 import sizeOf from "image-size";
-import getBrowser from "../src/utils/browser";
+import japscandl from "japscandl";
 import config from "../src/utils/config";
+import { Downloader } from "japscandl";
 import flags from "../src/utils/flags";
-import Downloader from "../src/components/Downloader";
 
 let downloader: Downloader;
 
@@ -16,13 +16,15 @@ describe("Downloader tests", function () {
     it("Browser instantiation", async function () {
         this.timeout(0);
         const configVariables = config.getConfigVariables();
-        const browser = await getBrowser(false, configVariables.chromePath);
-        const f = flags.getFlags();
-        downloader = new Downloader(browser, f, {
-            onPage: (attributes, currentPage, totalPages) => {
-                const { manga, chapter } = attributes;
-                console.log(`${manga} ${chapter} ${currentPage}/${totalPages}`);
-            }
+        const browser = await japscandl.getBrowser(false, configVariables.chromePath);
+        downloader = new Downloader(browser, {
+            onEvent: {
+                onPage: (attributes, currentPage, totalPages) => {
+                    const { manga, chapter } = attributes;
+                    console.log(`${manga} ${chapter} ${currentPage}/${totalPages}`);
+                }
+            },
+            flags: flags.getFlags()
         });
     });
     describe(`Downloading ${mangaToDownload} chapter ${chapterToDownload}`, function () {

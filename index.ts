@@ -1,17 +1,14 @@
-import getBrowser from "./src/utils/browser";
+import japscandl from "japscandl";
 import CLInterface from "./src/components/CLIInterface";
-import chrome from "./src/utils/chrome";
 import config from "./src/utils/config";
 import flags from "./src/utils/flags";
 
 // pour browser wrapper
 const configVariables = config.getConfigVariables();
-const chromePath = chrome.getChromePath(configVariables.chromePath);
+const chromePath = japscandl.utils.chrome.getChromePath(configVariables.chromePath);
 const f = flags.getFlags();
-getBrowser(f.headless, chromePath)
+japscandl.getBrowser(f.headless, chromePath)
     .then(async (browser) => {
         const inter = new CLInterface(browser);
         inter.start();
     })
-
-
