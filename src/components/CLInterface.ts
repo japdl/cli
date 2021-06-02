@@ -1,6 +1,6 @@
 import { Browser } from "puppeteer";
 import readline from "readline";
-import Downloader from "./Downloader";
+import { Downloader } from "japscandl";
 import commands from "../utils/commands";
 import flags from "../utils/flags";
 import { CLICommand, MangaAttributes } from "../utils/types";
@@ -12,6 +12,7 @@ class CLInterface extends Downloader {
     downloader!: Downloader;
     commands: Promise<Record<string, CLICommand>>;
     commandsKeys: string[];
+    isQuitting: boolean;
 
     /**
      * Initiates basic options to downloader,
@@ -46,10 +47,15 @@ class CLInterface extends Downloader {
                 console.log(`${mangaName} volume ${current}/${total} (${percent}%)`);
             }
         }
-        super(browser, flags.getFlags(), basicOptions);
+        super(browser, {
+            flags: flags.getFlags(),
+            onEvent: basicOptions
+        });
         browser.on('disconnected', () => {
-            console.log("Le navigateur a été fermé, arrêt du programme");
-            this.quit();
+            if (!this.isQuitting) {
+                console.log("Le navigateur a été fermé, arrêt du programme.");
+                this.quit();
+            }
         });
         this.rl = readline.createInterface({
             input: process.stdin,
@@ -58,6 +64,7 @@ class CLInterface extends Downloader {
         });
         this.commands = commands.getCommands();
         this.commandsKeys = commands.getCommandsKeys();
+        this.isQuitting = false;
     }
 
     /**
@@ -161,6 +168,7 @@ class CLInterface extends Downloader {
      */
     async quit(): Promise<void> {
         console.log("Merci d'avoir utilisé japdl!");
+        this.isQuitting = true;
         this.closeInput();
         this.rl.close();
         await this.destroy();
