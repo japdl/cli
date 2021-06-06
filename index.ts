@@ -2,7 +2,6 @@ import japscandl from "japscandl";
 import CLInterface from "./src/CLInterface";
 import config from "./src/utils/config";
 import flags from "./src/utils/flags";
-import ipc from "node-ipc";
 
 // pour browser wrapper
 const configVariables = config.getConfigVariables();
