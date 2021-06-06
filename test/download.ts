@@ -19,7 +19,6 @@ describe("Downloader tests", function () {
         const configVariables = config.getConfigVariables();
         const browser = await japscandl.getBrowser(false, chrome.getChromePath(configVariables.chromePath));
         const f = flags.getFlags();
-        console.log(f);
         downloader = new Downloader(browser, {
             onEvent: {
                 onPage: (attributes, totalPages) => {
