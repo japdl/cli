@@ -1,15 +1,16 @@
-import Fetcher from "../src/components/Fetcher";
-import getBrowser from "../src/utils/browser";
+import { Fetcher } from "japscandl";
+import japscandl from "japscandl";
 import config from "../src/utils/config";
 import flags from "../src/utils/flags";
+import chrome from "../src/utils/chrome";
 let fetcher: Fetcher;
+
 describe("Instantiate Fetcher", function () {
     it("Browser instantiation", async function () {
         this.timeout(0);
         const configVariables = config.getConfigVariables();
-        const browser = await getBrowser(false, configVariables.chromePath);
-        const f = flags.getFlags();
-        fetcher = new Fetcher(browser, f);
+        const browser = await japscandl.getBrowser(false, chrome.getChromePath(configVariables.chromePath));
+        fetcher = new Fetcher(browser, { flags: flags.getFlags() });
     });
 })
 describe("Fetch manga stats tests", function () {

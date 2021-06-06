@@ -1,6 +1,6 @@
 import archiver from "archiver";
 import fs from "fs";
-import Downloader from "../components/Downloader";
+import { Downloader } from "japscandl";
 
 const zipper = {
     async safeZip(downloader: Downloader, mangaName: string, mangaType: string, mangaNumber: string, directories: string[]): Promise<void> {
@@ -11,7 +11,7 @@ const zipper = {
             return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
         }
         console.log(`En train de faire le cbr ${mangaName} ${mangaType} ${mangaNumber}...`);
-        const cbrName = downloader.getCbrFrom(
+        const cbrName = downloader._getCbrFrom(
             mangaName,
             mangaNumber,
             mangaType

@@ -1,10 +1,11 @@
 import fs from "fs";
 import path from "path";
 import sizeOf from "image-size";
-import getBrowser from "../src/utils/browser";
+import japscandl from "japscandl";
 import config from "../src/utils/config";
+import { Downloader } from "japscandl";
 import flags from "../src/utils/flags";
-import Downloader from "../src/components/Downloader";
+import chrome from "../src/utils/chrome";
 
 let downloader: Downloader;
 
@@ -16,13 +17,17 @@ describe("Downloader tests", function () {
     it("Browser instantiation", async function () {
         this.timeout(0);
         const configVariables = config.getConfigVariables();
-        const browser = await getBrowser(false, configVariables.chromePath);
+        const browser = await japscandl.getBrowser(false, chrome.getChromePath(configVariables.chromePath));
         const f = flags.getFlags();
-        downloader = new Downloader(browser, f, {
-            onPage: (attributes, currentPage, totalPages) => {
-                const { manga, chapter } = attributes;
-                console.log(`${manga} ${chapter} ${currentPage}/${totalPages}`);
-            }
+        console.log(f);
+        downloader = new Downloader(browser, {
+            onEvent: {
+                onPage: (attributes, totalPages) => {
+                    const { manga, chapter, page } = attributes;
+                    console.log(`${manga} ${chapter} ${page}/${totalPages}`);
+                }
+            },
+            flags: f
         });
     });
     describe(`Downloading ${mangaToDownload} chapter ${chapterToDownload}`, function () {
@@ -77,7 +82,7 @@ describe("Downloader tests", function () {
             }
         });
         it("cbr must have been created", function () {
-            const cbrName = downloader.getCbrFrom(mangaToDownload, chapterToDownload.toString(), "chapitre");
+            const cbrName = downloader._getCbrFrom(mangaToDownload, chapterToDownload.toString(), "chapitre");
             if (!fs.existsSync(cbrName)) {
                 throw new Error("cbr was not created at " + cbrName);
             }

@@ -1,4 +1,4 @@
-import CLInterface from "../src/components/CLIInterface";
+import CLInterface from "../src/CLInterface";
 import fsplus from "../src/utils/fsplus";
 import manga from "../src/utils/manga";
 import mangaFormat from "../src/utils/mangaFormat";
@@ -27,11 +27,11 @@ module.exports = {
                 const links = await inter.fetchChapterLinksBetweenRange(mangaName, toDownload.start, toDownload.end);
                 links.forEach((link) => {
                     const attributes = url.getAttributesFromLink(link);
-                    const path = inter.getPathFrom(attributes);
+                    const path = inter._getPathFrom(attributes);
                     toZip.push(path);
                 });
             } else {
-                const path = inter.getPathFrom({ chapter: toDownload.toString(), manga: mangaName, page: "" + 1 });
+                const path = inter._getPathFrom({ chapter: toDownload.toString(), manga: mangaName, page: "" + 1 });
                 toZip.push(path);
             }
         }
@@ -40,13 +40,13 @@ module.exports = {
                 for(let i = toDownload.start; i <= toDownload.end; i++){
                     const chapters: string[] = await inter.fetchVolumeChapters(i, mangaName);
                     chapters.forEach((chapter) => {
-                        toZip.push(inter.getPathFrom(chapter));
+                        toZip.push(inter._getPathFrom(chapter));
                     });
                 }
             } else {
                 const chapters: string[] = await inter.fetchVolumeChapters(toDownload, mangaName);
                 chapters.forEach((chapter) => {
-                    toZip.push(inter.getPathFrom(chapter));
+                    toZip.push(inter._getPathFrom(chapter));
                 });
             }
         }
