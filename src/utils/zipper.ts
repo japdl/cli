@@ -11,7 +11,7 @@ const zipper = {
             return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
         }
         console.log(`En train de faire le cbr ${mangaName} ${mangaType} ${mangaNumber}...`);
-        const cbrName = downloader.getCbrFrom(
+        const cbrName = downloader._getCbrFrom(
             mangaName,
             mangaNumber,
             mangaType

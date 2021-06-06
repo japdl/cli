@@ -17,13 +17,24 @@ const config = {
         let chromePath = "";
         let outputDirectory = "manga";
         fileContent.forEach((line) => {
-            if (line.startsWith("#")) {
-                return;
+            function trimSpacesAroundEqualSign() {
+                return line
+                    // remove useless spaces
+                    .trim()
+                    // split on first equal sign
+                    .split(/=(.+)/)
+                    // remove empty spaces from each part of split
+                    .map(el => el.trim())
+                    // remove '' element(s)
+                    .filter((el) => el)
+                    // rejoin with =
+                    .join('=');
             }
-            if (line.startsWith("chrome_path=")) {
-                chromePath = line.substr("chrome_path=".length).trim();
-            } else if (line.startsWith("output_dir=")) {
-                outputDirectory = line.substr("output_dir=".length).trim();
+            if (line.startsWith("#")) return;
+            if (line.startsWith("chrome_path")) {
+                chromePath = trimSpacesAroundEqualSign().substr("chrome_path=".length);
+            } else if (line.startsWith("output_dir")) {
+                outputDirectory = trimSpacesAroundEqualSign().substr("output_dir=".length);
             }
         });
         return {

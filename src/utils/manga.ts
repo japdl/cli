@@ -1,5 +1,5 @@
 import fs from "fs";
-import CLInterface from "../components/CLInterface";
+import CLInterface from "../CLInterface";
 
 import { MangaAttributes } from "./types";
 import url from "./url";

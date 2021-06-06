@@ -1,4 +1,4 @@
-import CLInterface from "../src/components/CLInterface";
+import CLInterface from "../src/CLInterface";
 import path from "path";
 import manga from "../src/utils/manga";
 import mangaFormat from "../src/utils/mangaFormat";
@@ -37,7 +37,7 @@ module.exports = {
                 }
             } else {
                 if (!args[3].includes('f')) {
-                    const cbr = manga.alreadyDownloaded(inter.getCbrFrom(mangaName, toDownload.toString(), "volume"), false);
+                    const cbr = manga.alreadyDownloaded(inter._getCbrFrom(mangaName, toDownload.toString(), "volume"), false);
                     if (cbr) {
                         throw new Error(`Le chapitre est déjà en cbr, si vous voulez quand même le re-télécharger, il faut spécifier l'argument 'f' après le numéro de chapitre.`);
                     }
@@ -59,7 +59,7 @@ module.exports = {
                     const reasons = [];
                     const folder = manga.alreadyDownloaded(path.join(inter.outputDirectory, mangaName, toDownload.toString()));
                     if (folder) reasons.push("téléchargé");
-                    const cbr = manga.alreadyDownloaded(inter.getCbrFrom(mangaName, toDownload.toString(), "chapitre"), false);
+                    const cbr = manga.alreadyDownloaded(inter._getCbrFrom(mangaName, toDownload.toString(), "chapitre"), false);
                     if (cbr) reasons.push("en cbr");
                     if (folder || cbr)
                         throw new Error(`Le chapitre est déjà ${reasons.join(' et ')}, si vous voulez quand même le re-télécharger, il faut spécifier l'argument 'f' après le numéro de chapitre.`);

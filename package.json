@@ -36,7 +36,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "japscandl": "^1.0.15"
+    "japscandl": "^1.1.2"
   },
   "devDependencies": {
     "@types/archiver": "^5.1.0",

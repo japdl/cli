@@ -1,8 +1,12 @@
 import yargs from "yargs";
-import { ComponentFlags } from "./types";
 
 const flags = {
-    getFlags(): ComponentFlags {
+    getFlags(): {
+        verbose: boolean,
+        headless: boolean,
+        fast: boolean,
+        timeout: number,
+    }{
         const flags = yargs(process.argv.slice(2))
             .option("verbose", { alias: "v", boolean: true, default: false })
             .option("headless", { alias: "h", boolean: true, default: false })
