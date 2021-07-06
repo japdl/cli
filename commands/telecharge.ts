@@ -6,7 +6,7 @@ import mangaFormat from "../src/utils/mangaFormat";
 module.exports = {
     description: "Télécharge le volume|chapitre du manga indiqué, puis en fait un cbr. Les intervalles s'écrivent séparées par des '-'. Le flag 's' supprime les dossiers d'images après le téléchargement, 'f' force le téléchargement si les dossiers sont déjà trouvés sur le disque et 'n' ne fabrique pas le cbr après le téléchargement.",
     usage: "telecharge <nom-du-manga> <volume|chapitre> <numéro|intervalle> <optionnel: flag(s|f|n)>",
-    example: ["telecharge one-piece volume 99 s", "telecharge one-piece volume 99", "telecharge chainsaw-man chapitre 50", "telecharge fire-punch volume 1-8", "telecharge demon-slayer chapitre 1-50", "telecharge shingeki-no-kyojin volume debut-10", "t one-punch-man vol 1-end n"],
+    example: ["telecharge one-piece volume 99 s", "telecharge one-piece volume 99", "telecharge chainsaw-man chapitre 50", "telecharge fire-punch volume 1-8", "telecharge demon-slayer chapitre 1-50", "telecharge shingeki-no-kyojin volume debut-10", "t one-punch-man vol 1-fin n"],
     aliases: ["t"],
     argsNeeded: 3,
     async execute(inter: CLInterface, args: string[]): Promise<void> {

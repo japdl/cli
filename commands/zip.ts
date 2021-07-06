@@ -1,5 +1,5 @@
 import CLInterface from "../src/CLInterface";
-import fsplus from "../src/utils/fsplus";
+import japscandl from "japscandl";
 import manga from "../src/utils/manga";
 import mangaFormat from "../src/utils/mangaFormat";
 import url from "../src/utils/url";
@@ -50,7 +50,7 @@ module.exports = {
                 });
             }
         }
-        const isWorthZipping = fsplus.tellIfDoesntExist(toZip);
+        const isWorthZipping = japscandl.utils.fsplus.tellIfDoesntExist(toZip);
         if (isWorthZipping) {
             const numberString = (typeof toDownload === "number") ? toDownload.toString() : `${toDownload.start}-${toDownload.end}`;
             await zipper.safeZip(inter, mangaName, format, numberString, toZip);
