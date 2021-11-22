@@ -1,3 +1,4 @@
+# Cette version n'est plus mise à jour. Veuillez utiliser la nouvelle version, plus efficace et plus intuitive: [Japdl GUI](https://github.com/Seysa/japdl-gui)
 # Japdl
 Japdl est un programme pour télécharger les mangas de japscan. Pour l'instant, il n'est pas possible de télécharger les webtoons.
 
